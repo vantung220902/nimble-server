@@ -4,29 +4,26 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  OnModuleDestroy,
-  OnModuleInit,
 } from '@nestjs/common';
-import { Browser, Page } from 'puppeteer';
+import { Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import UserAgent from 'user-agents';
 puppeteer.use(StealthPlugin());
 
 @Injectable()
-export class CrawlerService implements OnModuleInit, OnModuleDestroy {
+export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
 
-  private browser: Browser;
-
   public async crawlGoogle(keyword: string): Promise<CrawledGoogleResponse> {
-    if (!this.browser) {
-      throw new InternalServerErrorException('Cannot launch browser!');
-    }
+    const browser = await puppeteer.launch({
+      headless: false,
+      args: ['--disable-setuid-sandbox', '--ignore-certificate-errors'],
+    });
 
     const generateUserAgent = new UserAgent();
 
-    const page = await this.browser.newPage();
+    const page = await browser.newPage();
 
     try {
       await page.setUserAgent(generateUserAgent.toString());
@@ -49,6 +46,8 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
       } catch (selectorError) {
         await this.detectCaptcha(page);
 
+        await page.close();
+        await browser.close();
         throw selectorError;
       }
 
@@ -70,6 +69,7 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
       ]);
 
       await page.close();
+      await browser.close();
 
       return {
         content: htmlContent,
@@ -78,25 +78,14 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
       };
     } catch (error) {
       await page.close();
-      this.logger.error(`CrawlerService crawlGoogle Error: ${error}`);
+      await browser.close();
+      this.logger.error(
+        `CrawlerService crawlGoogle Error: ${JSON.stringify(error, null, 5)}`,
+      );
       throw new InternalServerErrorException(
         `Crawl ${keyword} keyword failed: ${error.message}`,
       );
     }
-  }
-
-  async onModuleDestroy() {
-    if (this.browser) {
-      await this.browser.close();
-    }
-  }
-
-  async onModuleInit() {
-    this.browser = await puppeteer.launch({
-      headless: true,
-      args: ['--disable-setuid-sandbox'],
-      ignoreHTTPSErrors: true,
-    });
   }
 
   private async detectCaptcha(page: Page) {
@@ -107,7 +96,6 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
     );
     if (isCaptchaPresent) {
       this.logger.warn('CAPTCHA detected!');
-      await page.close();
       throw new InternalServerErrorException('Google CAPTCHA detected');
     }
   }

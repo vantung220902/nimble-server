@@ -12,6 +12,8 @@
     "api-svc"
   ],
   "scripts": {
+    "db": "aws ssm start-session --target i-07d75bb57a42dfe78 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"api-service-qa-db.cadc39zh5hiz.us-west-2.rds.amazonaws.com\",portNumber=\"5432\",localPortNumber=\"5438\" --profile pat-qa",
+    "redis": "aws ssm start-session --target i-07d75bb57a42dfe78 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"redis-nimble-ro.9rdqkx.ng.0001.usw2.cache.amazonaws.com\",portNumber=\"6379\",localPortNumber=\"6378\" --profile pat-qa",
     "prebuild": "rimraf dist",
     "build": "nest build -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -71,7 +73,7 @@
     "passport-jwt": "^4.0.1",
     "pino-http": "10.3.0",
     "pino-pretty": "13.0.0",
-    "puppeteer": "21.1.0",
+    "puppeteer": "^24.3.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "reflect-metadata": "0.1.13",

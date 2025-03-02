@@ -10,7 +10,10 @@ import { RedisService } from './services';
       inject: [AppConfig],
       useFactory: (appConfig: AppConfig) => ({
         type: 'single',
-        url: appConfig.redisUrl,
+        options: {
+          port: appConfig.redisPort,
+          host: appConfig.redisHost,
+        },
       }),
     }),
   ],

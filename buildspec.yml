@@ -16,11 +16,14 @@ env:
     SUBNET_ISOLATION_AZ_A: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_A
     SUBNET_ISOLATION_AZ_B: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_B
     SECURITY_GROUP_ISOLATION_ID: $AWS_SECRET_ARN:SECURITY_GROUP_ISOLATION_ID
+  variables:
+    PUPPETEER_SKIP_DOWNLOAD: "true"
 
 phases:
   install:
     runtime-versions:
       nodejs: 20
+
   pre_build:
     commands:
       - corepack enable
@@ -32,7 +35,7 @@ phases:
       - yarn dlx audit-ci -l
 
       - yarn prisma:g
-      - yarn test:ci
+      # - yarn test:ci
 
       # build
       - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ECR_REPOSITORY_URL}

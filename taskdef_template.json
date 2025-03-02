@@ -3,6 +3,7 @@
   "networkMode": "awsvpc",
   "taskRoleArn": "$TASK_ROLE",
   "executionRoleArn": "$TASK_EXECUTION_ROLE",
+  "enableExecuteCommand": true,
   "containerDefinitions": [
     {
       "logConfiguration": {
@@ -65,8 +66,12 @@
           "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/API_KEY"
       },
       {
-          "name": "REDIS_URL",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/REDIS_URL"
+          "name": "REDIS_HOST",
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/REDIS_HOST"
+      },
+      {
+          "name": "REDIS_PORT",
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/REDIS_PORT"
       },
       {
           "name": "JWT_SECRET",
@@ -78,11 +83,11 @@
       },
       {
         "name": "EMAIL_FORM",
-        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/file-service/$STAGE/EMAIL_FORM"
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/EMAIL_FORM"
       },
       {
         "name": "SENDGRID_API_KEY",
-        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/email-service/$STAGE/SENDGRID_API_KEY"
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/SENDGRID_API_KEY"
       }
       ]
     }

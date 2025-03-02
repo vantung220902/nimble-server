@@ -24,7 +24,9 @@ import { Module } from '@nestjs/common';
       isGlobal: true,
       inject: [AppConfig],
       useFactory: (appConfig: AppConfig) => ({
-        stores: createKeyv(appConfig.redisUrl),
+        stores: createKeyv(
+          `redis://${appConfig.redisHost}:${appConfig.redisPort}`,
+        ),
       }),
     }),
     EmailModule,

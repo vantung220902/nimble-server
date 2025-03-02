@@ -13,7 +13,7 @@ export const appSchema = {
   STAGE: Joi.string().default('dev'),
   JWT_SECRET: Joi.string(),
   REDIS_HOST: Joi.string(),
-  REDIS_URL: Joi.string(),
+  REDIS_PORT: Joi.number(),
   JWT_EXPIRES_IN: Joi.string(),
   EMAIL_FORM: Joi.string(),
   SENDGRID_API_KEY: Joi.string(),
@@ -29,7 +29,8 @@ export const appConfig = registerAs('app', () => ({
   apiKey: process.env.API_KEY,
   stage: process.env.STAGE,
   jwtSecret: process.env.JWT_SECRET,
-  redisUrl: process.env.REDIS_URL,
+  redisHost: process.env.REDIS_HOST,
+  redisPort: process.env.REDIS_PORT,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN,
   emailForm: process.env.EMAIL_FORM,
   sendGridApiKey: process.env.SENDGRID_API_KEY,
@@ -63,7 +64,8 @@ export class AppConfig {
   public readonly apiKey: string;
   public readonly stage: Stage;
   public readonly jwtSecret: string;
-  public readonly redisUrl: string;
+  public readonly redisHost: string;
+  public readonly redisPort: number;
   public readonly jwtExpiresIn: string;
   public readonly emailForm: string;
   public readonly sendGridApiKey: string;
@@ -89,7 +91,8 @@ export class AppConfig {
     this.apiKey = config.apiKey?.split(',')?.[0];
     this.stage = config.stage as Stage;
     this.jwtSecret = config.jwtSecret!;
-    this.redisUrl = config.redisUrl!;
+    this.redisHost = config.redisHost!;
+    this.redisPort = Number(config.redisPort!);
     this.jwtExpiresIn = config.jwtExpiresIn!;
     this.emailForm = config.emailForm!;
     this.sendGridApiKey = config.sendGridApiKey!;

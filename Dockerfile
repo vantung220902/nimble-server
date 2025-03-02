@@ -1,40 +1,85 @@
-# ----------> The build image
+# ----------> The build image 
 FROM node:20-bullseye-slim as build
+
+RUN apt-get update && apt-get install -y \
+  wget \
+  gnupg \
+  ca-certificates \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libgbm1 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxrandr2 \
+  xdg-utils \
+  lsb-release
+
+# Install Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+  && apt-get update \
+  && apt-get install -y google-chrome-stable \
+  && rm -rf /var/lib/apt/lists/*
+
+# Verify Chrome installation
+RUN google-chrome --version
+
+# Set the Puppeteer configuration
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 
 WORKDIR /usr/src/app
 
 RUN corepack enable
-
 COPY . .
 
 RUN yarn
-
 RUN npx prisma generate
-
 RUN NODE_OPTIONS="--max-old-space-size=6144" yarn build
 
 # ----------> The production image
 FROM node:20-bullseye-slim as run
 
+# Install Chrome and dependencies in production image
+RUN apt-get update && apt-get install -y \
+  wget \
+  gnupg \
+  ca-certificates \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libgbm1 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxrandr2 \
+  xdg-utils \
+  lsb-release
+
+# Install Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+  && apt-get update \
+  && apt-get install -y google-chrome-stable \
+  && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 
 WORKDIR /usr/src/app
-
-# Install chromium dependencies
-RUN apt-get update \
-  && apt-get install -y chromium \
-  ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 lsb-release wget xdg-utils \
-  fonts-noto \
-  fonts-noto-cjk \
-  fonts-noto-color-emoji \
-  fonts-crosextra-carlito \
-  cabextract \
-  xfonts-utils \
-  && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb \
-  && dpkg -i ttf-mscorefonts-installer_3.8_all.deb \
-  && fc-cache -f -v \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* ttf-mscorefonts-installer_3.8_all.deb
 
 COPY --from=build /usr/src/app/dist dist
 COPY --from=build /usr/src/app/node_modules node_modules
