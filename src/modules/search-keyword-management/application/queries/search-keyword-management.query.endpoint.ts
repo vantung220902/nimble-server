@@ -5,6 +5,9 @@ import {
   PaginatedResponseInterceptor,
   ResponseInterceptor,
 } from '@common/interceptors';
+import { GetKeywordsQuery } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.query';
+import { GetKeywordsRequestQuery } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.request-query';
+import { GetKeywordsQueryResponse } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.response';
 import { GetUploadedFilesQuery } from '@modules/search-keyword-management/application/queries/get-uploaded-files/get-uploaded-files.query';
 import { GetUploadedFilesRequestQuery } from '@modules/search-keyword-management/application/queries/get-uploaded-files/get-uploaded-files.request-query';
 import { GetUploadedFilesQueryResponse } from '@modules/search-keyword-management/application/queries/get-uploaded-files/get-uploaded-files.response';
@@ -44,5 +47,18 @@ export class SearchKeywordManagementQueryEndpoint extends QueryEndpoint {
       GetUploadedFilesQuery,
       GetUploadedFilesQueryResponse
     >(new GetUploadedFilesQuery(req.user, query));
+  }
+
+  @ApiOperation({ description: 'Get list keywords endpoint' })
+  @UseInterceptors(PaginatedResponseInterceptor)
+  @PaginatedApiResponse(GetKeywordsQueryResponse)
+  @Get('keywords')
+  public getKeywords(
+    @Req() req,
+    @Query() query: GetKeywordsRequestQuery,
+  ): Promise<GetKeywordsQueryResponse> {
+    return this.queryBus.execute<GetKeywordsQuery, GetKeywordsQueryResponse>(
+      new GetKeywordsQuery(req.user, query),
+    );
   }
 }
