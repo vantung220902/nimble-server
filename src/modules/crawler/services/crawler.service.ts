@@ -43,8 +43,11 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
     if (isCaptchaPresent) {
       this.logger.warn('CAPTCHA detected!');
 
-      if (!this.appConfig.isLocal) {
-        await page.solveRecaptchas();
+      if (this.appConfig.isProduction) {
+        const { solutions, solved } = await page.solveRecaptchas();
+        this.logger.debug(`Solution ${JSON.stringify(solutions, null, 5)}`);
+        this.logger.debug(`Solved ${JSON.stringify(solved, null, 5)}`);
+
         await waiter(2000);
       }
     }
