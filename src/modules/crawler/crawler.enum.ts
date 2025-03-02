@@ -1,7 +1,7 @@
 export const GoogleCrawlerOption = {
   userAgent:
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36',
-  link: 'https://www.google.com',
+  link: 'https://www.grab.com/vn',
   cookieButtonElement: 'button[id="L2AGLb"]',
   searchInputElement: 'textarea[name="q"]',
   selector: '#search',

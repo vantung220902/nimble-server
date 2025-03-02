@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { Page } from 'puppeteer';
+import { Page, executablePath } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import UserAgent from 'user-agents';
@@ -17,8 +17,13 @@ export class CrawlerService {
 
   public async crawlGoogle(keyword: string): Promise<CrawledGoogleResponse> {
     const browser = await puppeteer.launch({
-      headless: false,
-      args: ['--disable-setuid-sandbox', '--ignore-certificate-errors'],
+      headless: true,
+      args: [
+        '--disable-setuid-sandbox',
+        '--ignore-certificate-errors',
+        '--no-sandbox',
+      ],
+      executablePath: executablePath() || '/usr/bin/google-chrome',
     });
 
     const generateUserAgent = new UserAgent();
@@ -27,13 +32,12 @@ export class CrawlerService {
 
     try {
       await page.setUserAgent(generateUserAgent.toString());
-      await page.setViewport(GoogleCrawlerOption.viewPort);
       await page.setExtraHTTPHeaders({
         'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
       });
 
       await page.goto(
-        `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent(keyword)}`,
+        `${GoogleCrawlerOption.link}/search?key=${encodeURIComponent(keyword)}`,
         {
           waitUntil: 'load',
         },
