@@ -33,7 +33,9 @@ export class SearchKeywordManagementSubscriber
     try {
       const command: ProcessKeywordsCommand = JSON.parse(message);
 
-      await this.commandBus.execute(new ProcessKeywordsCommand(command.body));
+      await this.commandBus.execute(
+        new ProcessKeywordsCommand(command.body, command.userId),
+      );
     } catch (error) {
       console.error(`Error processing Redis message: ${error.message}`);
     }

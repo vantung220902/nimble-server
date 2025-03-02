@@ -1,16 +1,17 @@
+import { ProcessingStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
-import { CrawlContentEntity } from './crawl-content.entity';
-import { UserKeywordUploadEntity } from './user-keyword-upload.entity';
+import { FileKeywordsUploadEntity } from './file-keywords-upload.entity';
+import { KeywordEntity } from './keyword.entity';
 
-export class KeywordEntity {
+export class UserKeywordUploadEntity {
   @ApiProperty({
     required: false,
   })
-  id: string;
+  fileUploadId: string;
   @ApiProperty({
     required: false,
   })
-  content: string;
+  keywordId: string;
   @ApiProperty({
     type: 'string',
     format: 'date-time',
@@ -25,13 +26,16 @@ export class KeywordEntity {
   })
   resolvedAt: Date | null;
   @ApiProperty({
+    enum: ProcessingStatus,
     required: false,
-    nullable: true,
   })
-  crawledContent?: CrawlContentEntity | null;
+  status: ProcessingStatus;
   @ApiProperty({
-    isArray: true,
     required: false,
   })
-  fileUploads?: UserKeywordUploadEntity[];
+  fileUpload?: FileKeywordsUploadEntity;
+  @ApiProperty({
+    required: false,
+  })
+  keyword?: KeywordEntity;
 }

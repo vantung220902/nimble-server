@@ -1,21 +1,17 @@
-import {
-  EXPIRATION_KEYWORD_SECONDS,
-  GoogleCrawlerOption,
-} from '@modules/crawler/crawler.enum';
+import { waiter } from '@common/utils';
+import { AppConfig } from '@config';
+import { GoogleCrawlerOption } from '@modules/crawler/crawler.enum';
 import { CrawledGoogleResponse } from '@modules/crawler/interfaces';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-
-import { Cache } from 'cache-manager';
 import { Browser, Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
+import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 @Injectable()
@@ -24,23 +20,38 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
 
   private browser: Browser;
 
-  constructor(
-    @Inject(CACHE_MANAGER)
-    private readonly cacheService: Cache,
-  ) {
+  constructor(private readonly appConfig: AppConfig) {
     puppeteer.use(StealthPlugin());
+
+    puppeteer.use(
+      RecaptchaPlugin({
+        provider: {
+          id: '2captcha',
+          token: this.appConfig.reCaptchaApi,
+        },
+        visualFeedback: true,
+      }),
+    );
+  }
+
+  private async detectCaptcha(page: Page) {
+    const isCaptchaPresent = await page.evaluate(
+      () =>
+        document.querySelector('form[action*="captcha"]') !== null ||
+        document.querySelector('.g-recaptcha') !== null,
+    );
+    if (isCaptchaPresent) {
+      this.logger.warn('CAPTCHA detected!');
+
+      if (!this.appConfig.isLocal) {
+        await page.solveRecaptchas();
+        await waiter(2000);
+      }
+    }
   }
 
   public async crawlKeyword(keyword: string): Promise<CrawledGoogleResponse> {
     this.logger.log(`Searching for keyword: ${keyword.toString()}`);
-
-    const cacheKey = this.getCacheKey(keyword);
-    const cachedResult =
-      await this.cacheService.get<CrawledGoogleResponse>(cacheKey);
-
-    if (cachedResult) {
-      return cachedResult;
-    }
 
     if (!this.browser) {
       throw new InternalServerErrorException('Somethings wrong!');
@@ -61,29 +72,22 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
         },
       );
 
-      const htmlContent = await page.content();
+      await this.detectCaptcha(page);
+
+      const content = await page.content();
       const totalAds = await this.countAds(page);
       const totalLinks = await this.countLinks(page);
 
       const crawledResponse = {
         totalAds,
         totalLinks,
-        content: htmlContent,
+        content,
+        keyword,
       };
 
       await page.close();
 
-      await this.cacheService.set(
-        cacheKey,
-        crawledResponse,
-        EXPIRATION_KEYWORD_SECONDS,
-      );
-
-      return {
-        totalAds,
-        totalLinks,
-        content: htmlContent,
-      };
+      return crawledResponse;
     } catch (error) {
       console.log('Error', error);
       await page.close();
@@ -121,10 +125,6 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
 
   private async countLinks(page: Page): Promise<number> {
     return await page.$$eval('a', (links) => links.length);
-  }
-
-  private getCacheKey(keyword: string): string {
-    return `keywordResult:${keyword.toLowerCase().trim()}`;
   }
 
   private getRandomUserAgent(): string {

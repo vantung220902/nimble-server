@@ -16,6 +16,10 @@ export class SearchKeywordManagementService {
     return 'triggerKeyword';
   }
 
+  public getCacheKey(keyword: string): string {
+    return `keywordResult:${keyword.toLowerCase().trim()}`;
+  }
+
   public subscribeKeywordStream(connectionId: string): Observable<string> {
     const processingKeywordChannel =
       this.getProcessingKeywordChannel(connectionId);

@@ -43,12 +43,13 @@ export class SearchKeywordManagementCommandEndpoint extends CommandEndpoint {
   @ApiListResponse(ProcessKeywordsCommandResponse)
   @Post('process')
   public search(
+    @Request() request,
     @Body() body: ProcessKeywordsRequestBody,
   ): Promise<ProcessKeywordsCommandResponse> {
     return this.commandBus.execute<
       ProcessKeywordsCommand,
       ProcessKeywordsCommandResponse
-    >(new ProcessKeywordsCommand(body));
+    >(new ProcessKeywordsCommand(body, request.user.sub));
   }
 
   @Sse('keyword-stream/:id')

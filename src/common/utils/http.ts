@@ -5,3 +5,6 @@ export const getTokenFromHeader = (headers: Request['headers']) => {
 
   return type === 'Bearer' ? token : undefined;
 };
+
+export const waiter = (timeout: number) =>
+  new Promise((resolve) => setTimeout(resolve, timeout));

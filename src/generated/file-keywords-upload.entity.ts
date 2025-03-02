@@ -1,7 +1,7 @@
 import { ProcessingStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity } from './user.entity';
-import { KeywordEntity } from './keyword.entity';
+import { UserKeywordUploadEntity } from './user-keyword-upload.entity';
 
 export class FileKeywordsUploadEntity {
   @ApiProperty({
@@ -52,5 +52,5 @@ export class FileKeywordsUploadEntity {
     isArray: true,
     required: false,
   })
-  keywords?: KeywordEntity[];
+  keywords?: UserKeywordUploadEntity[];
 }

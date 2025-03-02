@@ -4405,10 +4405,12 @@ __metadata:
     passport-jwt: "npm:^4.0.1"
     pino-http: "npm:10.3.0"
     pino-pretty: "npm:13.0.0"
+    playwright-core: "npm:^1.50.1"
     prettier: "npm:3.2.5"
     prisma: "npm:6.1.0"
     puppeteer: "npm:^19.7.0"
     puppeteer-extra: "npm:^3.3.4"
+    puppeteer-extra-plugin-recaptcha: "npm:^3.6.8"
     puppeteer-extra-plugin-stealth: "npm:^2.11.2"
     reflect-metadata: "npm:0.1.13"
     rxjs: "npm:^7.8.1"
@@ -9466,7 +9468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"merge-deep@npm:^3.0.1":
+"merge-deep@npm:^3.0.1, merge-deep@npm:^3.0.2":
   version: 3.0.3
   resolution: "merge-deep@npm:3.0.3"
   dependencies:
@@ -10539,6 +10541,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"playwright-core@npm:^1.50.1":
+  version: 1.50.1
+  resolution: "playwright-core@npm:1.50.1"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/c158764257d870897c31807a830ddcc3f5aaf4376719e05aeada3489a01f751650b2dc43e027201a40405a1b075084e89f58cd3730a985a229efe9d8cecfe360
+  languageName: node
+  linkType: hard
+
 "pluralize@npm:8.0.0":
   version: 8.0.0
   resolution: "pluralize@npm:8.0.0"
@@ -10716,6 +10727,25 @@ __metadata:
     typescript:
       optional: true
   checksum: 10c0/86d3dfbd2dde913fc10f90ea657095cf861b95bce3a4c6f8cc38d4c3f28c931369c9d01877d1aefba3a0b2454d679d9f8475309ef63149823cf12995c0a5cdc4
+  languageName: node
+  linkType: hard
+
+"puppeteer-extra-plugin-recaptcha@npm:^3.6.8":
+  version: 3.6.8
+  resolution: "puppeteer-extra-plugin-recaptcha@npm:3.6.8"
+  dependencies:
+    debug: "npm:^4.1.1"
+    merge-deep: "npm:^3.0.2"
+    puppeteer-extra-plugin: "npm:^3.2.3"
+  peerDependencies:
+    playwright-extra: "*"
+    puppeteer-extra: "*"
+  peerDependenciesMeta:
+    playwright-extra:
+      optional: true
+    puppeteer-extra:
+      optional: true
+  checksum: 10c0/164a3149c9bef6fa2ea4f0f01cb4e2498b7251284318aae6068a4c8f831a821f559ad6a6ec03c72b12e244479c0c1940e11f27f9e9ff70f45c3a2c5610ac5ba0
   languageName: node
   linkType: hard
 

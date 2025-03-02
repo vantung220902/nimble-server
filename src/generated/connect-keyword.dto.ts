@@ -1,3 +1,4 @@
 export class ConnectKeywordDto {
-  id: string;
+  id?: string;
+  content?: string;
 }

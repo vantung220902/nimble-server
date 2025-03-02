@@ -74,6 +74,7 @@ export class UploadKeywordsHandler extends CommandHandlerBase<
         connectionId,
         fileUploadId: createdFileKeywords.id,
       },
+      userId: createdFileKeywords.userId,
     });
 
     return {

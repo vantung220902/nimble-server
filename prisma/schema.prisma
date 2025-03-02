@@ -61,17 +61,17 @@ model User {
 }
 
 model FileKeywordsUpload {
-  id            String           @id(map: "pk_file_keywords_upload") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  uploadedAt    DateTime         @map("uploaded_at") @db.Timestamptz(6)
-  userId        String           @map("user_id") @db.Uuid
-  fileUrl       String           @map("file_url") @db.VarChar(1000)
-  totalKeywords Int              @map("total_keywords") @db.Integer
-  status        ProcessingStatus @default(PENDING)
-  connectionId  String?          @map("connection_id") @db.Uuid
+  id            String              @id(map: "pk_file_keywords_upload") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  uploadedAt    DateTime            @map("uploaded_at") @db.Timestamptz(6)
+  userId        String              @map("user_id") @db.Uuid
+  fileUrl       String              @map("file_url") @db.VarChar(1000)
+  totalKeywords Int                 @map("total_keywords") @db.Integer
+  status        ProcessingStatus    @default(PENDING)
+  connectionId  String?             @map("connection_id") @db.Uuid
   //Relation
-  createdBy     User             @relation(fields: [userId], references: [id], map: "fk_file_keywords_upload_created_by_user", onDelete: Cascade)
-  keywords      Keyword[]
+  createdBy     User                @relation(fields: [userId], references: [id], map: "fk_file_keywords_upload_created_by_user", onDelete: Cascade)
+  keywords      UserKeywordUpload[] @relation(map: "fk_user_keyword_upload_file_upload")
 
   // Index
   @@index([userId], map: "ixfk_file_keywords_upload_user_id")
@@ -80,23 +80,37 @@ model FileKeywordsUpload {
   @@map("file_keywords_upload")
 }
 
-model Keyword {
-  id           String           @id(map: "pk_keyword") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  content      String           @db.Text
+model UserKeywordUpload {
+  fileUploadId String           @map("file_upload_id") @db.Uuid
+  keywordId    String           @map("keyword_id") @db.Uuid
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   resolvedAt   DateTime?        @map("resolved_at") @db.Timestamptz(6)
-  fileUploadId String           @map("file_upload_id") @db.Uuid
   status       ProcessingStatus @default(PENDING)
 
   // Relation
-  fileUpload     FileKeywordsUpload @relation(fields: [fileUploadId], references: [id], map: "fk_keyword_file_upload", onDelete: Cascade)
-  crawledContent CrawlContent?
+  fileUpload FileKeywordsUpload @relation(fields: [fileUploadId], references: [id], map: "fk_user_keyword_upload_file_upload", onDelete: Cascade)
+  keyword    Keyword            @relation(fields: [keywordId], references: [id], map: "fk_user_keyword_upload_keyword", onDelete: Cascade)
 
   // Index
-  @@unique([fileUploadId, content], map: "ixuq_keyword_content")
-  @@index([fileUploadId], map: "ixid_keyword_file_upload_id")
+  @@id([fileUploadId, keywordId], map: "pk_file_keyword")
+  @@index([keywordId], map: "ixfk_user_keyword_upload_keyword")
+  @@index([fileUploadId], map: "ixfk_user_keyword_upload_file_upload")
+  @@map("user_keyword_upload")
+}
+
+model Keyword {
+  id         String    @id(map: "pk_keyword") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  content    String    @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
+
+  // Relation
+  crawledContent CrawlContent?
+  fileUploads    UserKeywordUpload[]
+
+  // Index
+  @@unique([content], map: "ixuq_keyword_content")
   @@index([resolvedAt], map: "ixid_keyword_resolved_at")
-  @@index([status], map: "ixtext_keyword_status")
   @@map("keyword")
 }
 
