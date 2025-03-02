@@ -1,0 +1,49 @@
+{
+  "files.exclude": {
+    ".husky": true,
+    ".coverage": true,
+    "dist": true,
+    "node_modules": true,
+    "generated": true,
+    "reports": true
+  },
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "editor.renderWhitespace": "all",
+  "editor.formatOnSave": true,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "tsco.useRegions": false,
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "jest.autoRun": "off",
+  "jest.enableSnapshotUpdateMessages": false,
+  "jest.enableSnapshotPreviews": false,
+  "jest.enableCodeLens": false,
+  "eslint.workingDirectories": ["server"],
+  "cSpell.words": [
+    "auths",
+    "cqrs",
+    "ixdate",
+    "ixfk",
+    "ixid",
+    "ixtext",
+    "ixuq",
+    "nestjs",
+    "Nimble",
+    "Timestamptz"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "tsConfigPath": "tsconfig.build.json",
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "introspectComments": true,
+          "dtoFileNameSuffix": [
+            ".dto.ts",
+            ".entity.ts",
+            ".request-body.ts",
+            ".request-param.ts",
+            ".request-query.ts",
+            ".response.ts",
+            ".interface.ts"
+          ],
+          "controllerFileNameSuffix": [".endpoint.ts", ".controller.ts"]
+        }
+      }
+    ]
+  }
+}

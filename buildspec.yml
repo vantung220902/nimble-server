@@ -1,0 +1,63 @@
+version: 0.2
+
+env:
+  secrets-manager:
+    NODE_ENV: $AWS_SECRET_ARN:NODE_ENV
+    AWS_ACCOUNT_ID: $AWS_SECRET_ARN:AWS_ACCOUNT_ID
+    AWS_REGION: $AWS_SECRET_ARN:AWS_REGION
+    AWS_ECR_IMAGE_TAG: $AWS_SECRET_ARN:AWS_NIMBLE_ECR_IMAGE_TAG
+    AWS_ECR_REPOSITORY_URL: $AWS_SECRET_ARN:AWS_ECR_NIMBLE_REPOSITORY_URL
+    TASK_EXECUTION_ROLE: $AWS_SECRET_ARN:TASK_EXECUTION_ROLE
+    TASK_ROLE: $AWS_SECRET_ARN:TASK_ROLE
+    APP_PORT: $AWS_SECRET_ARN:NIMBLE_CONTAINER_PORT
+    API_PORT: $AWS_SECRET_ARN:NIMBLE_CONTAINER_PORT
+    DATABASE_URL: $AWS_SECRET_ARN:NIMBLE_DB_URL
+    SHADOW_DATABASE_URL: $AWS_SECRET_ARN:NIMBLE_SHADOW_DB_URL
+    SUBNET_ISOLATION_AZ_A: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_A
+    SUBNET_ISOLATION_AZ_B: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_B
+    SECURITY_GROUP_ISOLATION_ID: $AWS_SECRET_ARN:SECURITY_GROUP_ISOLATION_ID
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+  pre_build:
+    commands:
+      - corepack enable
+      - yarn install
+      - envsubst < appspec_template.yml > appspec.yml
+      - envsubst < taskdef_template.json > taskdef.json
+  build:
+    commands:
+      - yarn dlx audit-ci -l
+
+      - yarn prisma:g
+      - yarn test:ci
+
+      # build
+      - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ECR_REPOSITORY_URL}
+      - docker build --pull --build-arg NODE_ENV=$NODE_ENV -t ${AWS_ECR_REPOSITORY_URL}:${AWS_ECR_IMAGE_TAG} .
+      - echo Pushing the Docker image to registry...
+      - COMMIT_ID=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -b -8)
+      - docker tag ${AWS_ECR_REPOSITORY_URL}:${AWS_ECR_IMAGE_TAG} ${AWS_ECR_REPOSITORY_URL}:${COMMIT_ID}
+      - docker push ${AWS_ECR_REPOSITORY_URL} --all-tags
+      # run DB migration
+      - export DATABASE_URL="${DATABASE_URL}"
+      - export SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
+      - yarn prisma:deploy
+
+      - printf '{"ImageURI":"%s"}' ${AWS_ECR_REPOSITORY_URL}:${COMMIT_ID} > imageDetail.json
+      - ls -la
+
+  post_build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR
+      - echo $CODEBUILD_BUILD_SUCCEEDING
+
+artifacts:
+  files:
+    - "appspec.yml"
+    - "taskdef.json"
+    - "imageDetail.json"
+  discard-paths: yes
+  name: BuildArtifact

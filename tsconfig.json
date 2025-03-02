@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "paths": {
+      "@modules/*": ["src/modules/*"],
+      "@common/*": ["src/common/*"],
+      "@common": ["src/common/*"],
+      "@generated": ["src/generated"],
+      "@generated/*": ["src/generated/*"],
+      "@config": ["src/config"],
+      "@config/*": ["src/config/*"],
+      "@swagger": ["src/swagger"],
+      "@swagger/*": ["src/swagger/*"],
+      "@health": ["src/health"],
+      "@health/*": ["src/health/*"],
+      "@logger": ["src/logger"],
+      "@logger/*": ["src/logger/*"],
+      "@database": ["src/database"],
+      "@database/*": ["src/database/*"],
+      "@email": ["src/email"],
+      "@email/*": ["src/email/*"],
+      "@redis": ["src/redis"],
+      "@redis/*": ["src/redis/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

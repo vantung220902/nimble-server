@@ -1,0 +1,117 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+generator nestjsDto {
+  provider                        = "prisma-generator-nestjs-dto"
+  output                          = "../src/generated"
+  outputToNestJsResourceStructure = "false"
+  flatResourceStructure           = "false"
+  exportRelationModifierClasses   = "true"
+  reExport                        = "true"
+  createDtoPrefix                 = "Create"
+  updateDtoPrefix                 = "Update"
+  dtoSuffix                       = "Dto"
+  entityPrefix                    = ""
+  entitySuffix                    = "Entity"
+  classValidation                 = "true"
+  fileNamingStyle                 = "kebab"
+  noDependencies                  = "false"
+  outputType                      = "class"
+  prettier                        = "true"
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  UNVERIFIED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id             String     @id(map: "pk_user") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  firstName      String     @map("first_name") @db.VarChar(100)
+  lastName       String     @map("last_name") @db.VarChar(100)
+  email          String     @map("email") @db.VarChar(255)
+  emailVerified  DateTime?
+  hashedPassword String     @map("hashed_password") @db.VarChar(500)
+  status         UserStatus @default(ACTIVE)
+
+  // Relation
+  fileUploads FileKeywordsUpload[]
+
+  //Index
+  @@unique([email], map: "ixuq_user_email")
+  @@map("user")
+}
+
+model FileKeywordsUpload {
+  id            String           @id(map: "pk_file_keywords_upload") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  uploadedAt    DateTime         @map("uploaded_at") @db.Timestamptz(6)
+  userId        String           @map("user_id") @db.Uuid
+  fileUrl       String           @map("file_url") @db.VarChar(1000)
+  totalKeywords Int              @map("total_keywords") @db.Integer
+  status        ProcessingStatus @default(PENDING)
+  connectionId  String?          @map("connection_id") @db.Uuid
+  //Relation
+  createdBy     User             @relation(fields: [userId], references: [id], map: "fk_file_keywords_upload_created_by_user", onDelete: Cascade)
+  keywords      Keyword[]
+
+  // Index
+  @@index([userId], map: "ixfk_file_keywords_upload_user_id")
+  @@index([uploadedAt], map: "ixdate_file_keywords_upload_uploaded_at")
+  @@index([status], map: "ixtext_file_keywords_upload_status")
+  @@map("file_keywords_upload")
+}
+
+model Keyword {
+  id           String           @id(map: "pk_keyword") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  content      String           @db.Text
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt   DateTime?        @map("resolved_at") @db.Timestamptz(6)
+  fileUploadId String           @map("file_upload_id") @db.Uuid
+  status       ProcessingStatus @default(PENDING)
+
+  // Relation
+  fileUpload     FileKeywordsUpload @relation(fields: [fileUploadId], references: [id], map: "fk_keyword_file_upload", onDelete: Cascade)
+  crawledContent CrawlContent?
+
+  // Index
+  @@unique([fileUploadId, content], map: "ixuq_keyword_content")
+  @@index([fileUploadId], map: "ixid_keyword_file_upload_id")
+  @@index([resolvedAt], map: "ixid_keyword_resolved_at")
+  @@index([status], map: "ixtext_keyword_status")
+  @@map("keyword")
+}
+
+model CrawlContent {
+  id             String   @id(map: "pk_crawl_content") @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  keywordId      String   @db.Uuid
+  totalGoogleAds Int      @default(0) @map("total_google_ads") @db.Integer
+  totalLinks     Int      @default(0) @db.Integer
+  content        String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  //relation
+  keyword Keyword @relation(fields: [keywordId], references: [id], map: "fk_crawl_content_keyword", onDelete: Cascade)
+
+  // Index
+  @@unique([keywordId], map: "ixuq_crawl_content_keyword_id")
+  @@map("crawl_content")
+}
