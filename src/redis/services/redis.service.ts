@@ -1,28 +1,39 @@
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import Redis from 'ioredis';
+import { AppConfig } from '@config';
+import { Injectable, Logger } from '@nestjs/common';
+import { Redis } from 'ioredis';
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
-  constructor(
-    @InjectRedis()
-    private readonly redis: Redis,
-  ) {}
+export class RedisService {
+  private readonly logger = new Logger(RedisService.name);
+  private readonly publisher: Redis;
+  private readonly subscriber: Redis;
 
-  onModuleDestroy() {
-    return this.redis.quit();
+  constructor(private readonly appConfig: AppConfig) {
+    this.publisher = new Redis({
+      host: this.appConfig.redisHost,
+      port: this.appConfig.redisPort,
+    });
+
+    this.subscriber = new Redis({
+      host: this.appConfig.redisHost,
+      port: this.appConfig.redisPort,
+    });
   }
 
-  public async publish(channel: string, message: string) {
-    return this.redis.publish(channel, message);
+  public publish(channel: string, payload: string) {
+    this.publisher.publish(channel, payload);
   }
 
-  public async subscribe(channel: string, callback: (message: string) => void) {
-    const subscriber = this.redis.duplicate();
-    return subscriber.on('message', (receivedChannel, receivedMessage) => {
+  public subscribe(channel: string, callback: (message: string) => void) {
+    this.subscriber.subscribe(channel);
+    this.subscriber.on('message', (receivedChannel, receivedMessage) => {
       if (receivedChannel === channel) {
         callback(receivedMessage);
       }
     });
+  }
+
+  public unsubscribe(channel: string) {
+    this.publisher.unsubscribe(channel);
   }
 }

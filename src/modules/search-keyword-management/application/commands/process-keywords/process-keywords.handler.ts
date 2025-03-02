@@ -3,6 +3,7 @@ import { PrismaService } from '@database';
 import { CrawlerService } from '@modules/crawler/services';
 import { ProcessKeywordsCommand } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.command';
 import { ProcessKeywordsCommandResponse } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.response';
+import { CONCURRENTCY_KEYWORDS_LIMIT } from '@modules/search-keyword-management/search-keyword-management.enum';
 import { SearchKeywordManagementService } from '@modules/search-keyword-management/services';
 import { CommandHandler } from '@nestjs/cqrs';
 import { ProcessingStatus } from '@prisma/client';
@@ -42,6 +43,7 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       fileUploadId,
       status: ProcessingStatus.PENDING,
     }));
+
     await Promise.all([
       this.dbContext.keyword.createMany({
         data: insertingKeywords,
@@ -54,50 +56,29 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       ),
     ]);
 
-    const processedKeywords: ProcessKeywordsCommandResponse[] = [];
+    const processingKeywords = uniqueKeywords.map(
+      (keyword) =>
+        ({
+          keyword,
+          fileUploadId,
+          status: ProcessingStatus.PROCESSING,
+        }) as ProcessKeywordsCommandResponse,
+    );
 
-    for (const keyword of uniqueKeywords) {
-      const response = {
-        keyword,
-        fileUploadId,
-        status: ProcessingStatus.PROCESSING,
-      } as ProcessKeywordsCommandResponse;
+    this.redisService.publish(
+      processingKeywordChannel,
+      JSON.stringify({
+        data: processingKeywords,
+      }),
+    );
 
-      await this.redisService.publish(
-        processingKeywordChannel,
-        JSON.stringify({
-          data: [response],
-        }),
-      );
-
-      try {
-        const crawledResponse = await this.crawlerService.crawlGoogle(keyword);
-
-        response.status = ProcessingStatus.COMPLETED;
-        response.searchResult = crawledResponse;
-
-        await this.processSuccessKeywords(response, fileUploadId);
-
-        await this.redisService.publish(
-          processingKeywordChannel,
-          JSON.stringify({
-            data: [response],
-          }),
-        );
-      } catch (error) {
-        this.logger.error(`CrawlerService crawlGoogle Error:  ${error}`);
-        response.status = ProcessingStatus.FAILED;
-
-        await this.redisService.publish(
-          processingKeywordChannel,
-          JSON.stringify({
-            data: [response],
-          }),
-        );
-      }
-
-      processedKeywords.push(response);
-    }
+    const concurrencyLimit = CONCURRENTCY_KEYWORDS_LIMIT;
+    const processedKeywords = await this.processKeywordsWithConcurrency(
+      uniqueKeywords,
+      fileUploadId,
+      processingKeywordChannel,
+      concurrencyLimit,
+    );
 
     await this.processFailedKeywords(processedKeywords, fileUploadId);
 
@@ -123,6 +104,56 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
         status: ProcessingStatus.FAILED,
       },
     });
+  }
+
+  private async processKeywordsWithConcurrency(
+    keywords: string[],
+    fileUploadId: string,
+    channel: string,
+    concurrencyLimit: number,
+  ): Promise<ProcessKeywordsCommandResponse[]> {
+    const results: ProcessKeywordsCommandResponse[] = [];
+    const queue = [...keywords];
+
+    while (queue.length > 0) {
+      const batch = queue.splice(0, concurrencyLimit);
+      const batchPromises = batch.map(async (keyword) => {
+        const response = {
+          keyword,
+          fileUploadId,
+          status: ProcessingStatus.PROCESSING,
+        } as ProcessKeywordsCommandResponse;
+
+        try {
+          const crawledResponse =
+            await this.crawlerService.crawlKeyword(keyword);
+
+          response.status = ProcessingStatus.COMPLETED;
+          response.searchResult = crawledResponse;
+
+          await this.processSuccessKeywords(response, fileUploadId);
+        } catch (error) {
+          this.logger.error(
+            `CrawlerService crawlKeyword Error for "${keyword}": ${error}`,
+          );
+          response.status = ProcessingStatus.FAILED;
+        }
+
+        await this.redisService.publish(
+          channel,
+          JSON.stringify({
+            data: [response],
+          }),
+        );
+
+        return response;
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+    }
+
+    return results;
   }
 
   private async processSuccessKeywords(

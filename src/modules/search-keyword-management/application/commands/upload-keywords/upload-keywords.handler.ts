@@ -2,11 +2,12 @@ import { CommandHandlerBase } from '@common/cqrs';
 import { PrismaService } from '@database';
 import { FileService } from '@modules/file/services';
 import { ProcessKeywordsCommand } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.command';
-import { ProcessKeywordsRequestBody } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.request-body';
 import { MAXIMUM_KEYWORDS_PROCESS } from '@modules/search-keyword-management/search-keyword-management.enum';
+import { SearchKeywordManagementService } from '@modules/search-keyword-management/services';
 import { BadRequestException } from '@nestjs/common';
-import { CommandBus, CommandHandler } from '@nestjs/cqrs';
+import { CommandHandler } from '@nestjs/cqrs';
 import { ProcessingStatus } from '@prisma/client';
+import { RedisService } from '@redis/services';
 import { UploadKeywordsCommand } from './upload-keywords.command';
 import { UploadKeywordsCommandResponse } from './upload-keywords.response';
 
@@ -18,7 +19,8 @@ export class UploadKeywordsHandler extends CommandHandlerBase<
   constructor(
     private readonly dbContext: PrismaService,
     private readonly fileService: FileService,
-    private commandBus: CommandBus,
+    private readonly redisService: RedisService,
+    private readonly searchKeywordManagementService: SearchKeywordManagementService,
   ) {
     super();
   }
@@ -29,8 +31,14 @@ export class UploadKeywordsHandler extends CommandHandlerBase<
     return this.upload(command);
   }
 
-  private async triggerProcessKeywords(option: ProcessKeywordsRequestBody) {
-    return this.commandBus.execute(new ProcessKeywordsCommand(option));
+  private async triggerProcessKeywords(option: ProcessKeywordsCommand) {
+    const processKeywordChannel =
+      this.searchKeywordManagementService.getTriggerProcessKeywordChannel();
+
+    return this.redisService.publish(
+      processKeywordChannel,
+      JSON.stringify(option),
+    );
   }
 
   private async upload({
@@ -61,9 +69,11 @@ export class UploadKeywordsHandler extends CommandHandlerBase<
     const connectionId = createdFileKeywords.id;
 
     await this.triggerProcessKeywords({
-      keywords,
-      connectionId,
-      fileUploadId: createdFileKeywords.id,
+      body: {
+        keywords,
+        connectionId,
+        fileUploadId: createdFileKeywords.id,
+      },
     });
 
     return {

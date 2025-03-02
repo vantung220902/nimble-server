@@ -12,6 +12,10 @@ export class SearchKeywordManagementService {
     return `keywordsConnectionId:${connectionId}`;
   }
 
+  public getTriggerProcessKeywordChannel() {
+    return 'triggerKeyword';
+  }
+
   public subscribeKeywordStream(connectionId: string): Observable<string> {
     const processingKeywordChannel =
       this.getProcessingKeywordChannel(connectionId);

@@ -36,6 +36,7 @@
   "eslint.workingDirectories": ["server"],
   "cSpell.words": [
     "auths",
+    "CONCURRENTCY",
     "cqrs",
     "ixdate",
     "ixfk",

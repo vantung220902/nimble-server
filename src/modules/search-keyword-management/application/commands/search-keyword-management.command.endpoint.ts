@@ -52,7 +52,7 @@ export class SearchKeywordManagementCommandEndpoint extends CommandEndpoint {
   }
 
   @Sse('keyword-stream/:id')
-  public stream(@Param() { id }: Record<string, string>): Observable<string> {
+  public stream(@Param('id') id: string): Observable<any> {
     return this.searchKeywordManagementService
       .subscribeKeywordStream(id)
       .pipe();

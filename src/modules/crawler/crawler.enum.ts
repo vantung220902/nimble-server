@@ -1,14 +1,28 @@
 export const GoogleCrawlerOption = {
-  userAgent:
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36',
-  link: 'https://www.grab.com/vn',
+  userAgents: [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+  ],
+  link: 'https://www.google.com',
   cookieButtonElement: 'button[id="L2AGLb"]',
   searchInputElement: 'textarea[name="q"]',
   selector: '#search',
   primaryAdElement: 'div.RnJeZd.top.pla-unit-title',
   linkTag: 'a',
   viewPort: {
-    width: 1200,
-    height: 800,
+    width: 1920 + Math.floor(Math.random() * 100),
+    height: 1080 + Math.floor(Math.random() * 100),
+    deviceScaleFactor: 1,
+    hasTouch: false,
+    isLandscape: true,
+    isMobile: false,
   },
+  cookies: [
+    { name: 'NID', value: '123=abcd', domain: '.google.com' },
+    { name: 'CONSENT', value: 'YES+', domain: '.google.com' },
+  ],
 };
+
+export const EXPIRATION_KEYWORD_SECONDS = 18000;
