@@ -17,11 +17,11 @@ describe('QueryHandlerCQRS', () => {
   let queryHandler: QueryHandler;
 
   beforeEach(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
+    const testModule: TestingModule = await Test.createTestingModule({
       providers: [QueryHandler, { provide: QueryBus, useClass: MockQueryBus }],
     }).compile();
 
-    queryHandler = moduleRef.get<QueryHandler>(QueryHandler);
+    queryHandler = testModule.get<QueryHandler>(QueryHandler);
   });
 
   it('should be defined', () => {

@@ -14,14 +14,18 @@ class SignUpRequestBody {
 }
 
 describe('MatchWithDecorator', () => {
+  const mockPassword = 'password';
+  let mockConfirmPassword = 'password';
+
   it('should pass validation when values match', async () => {
-    const dto = new SignUpRequestBody('password123', 'password123');
+    const dto = new SignUpRequestBody(mockPassword, mockConfirmPassword);
     const errors = await validate(dto);
     expect(errors.length).toBe(0);
   });
 
   it('should fail validation when values do not match', async () => {
-    const dto = new SignUpRequestBody('password123', 'different');
+    mockConfirmPassword = 'different';
+    const dto = new SignUpRequestBody(mockPassword, mockConfirmPassword);
     const errors = await validate(dto);
 
     expect(errors.length).toBe(1);
@@ -32,7 +36,7 @@ describe('MatchWithDecorator', () => {
   });
 
   it('should handle undefined values', async () => {
-    const dto = new SignUpRequestBody('password123', undefined as any);
+    const dto = new SignUpRequestBody(mockPassword, undefined);
     const errors = await validate(dto);
 
     expect(errors.length).toBe(1);
@@ -40,7 +44,7 @@ describe('MatchWithDecorator', () => {
   });
 
   it('should handle null values', async () => {
-    const dto = new SignUpRequestBody('password123', null as any);
+    const dto = new SignUpRequestBody(mockPassword, null);
     const errors = await validate(dto);
 
     expect(errors.length).toBe(1);

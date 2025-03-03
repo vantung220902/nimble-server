@@ -18,7 +18,7 @@ describe('EmailService', () => {
       emailForm: 'example@gmail.com',
     } as jest.MockedObject<AppConfig>;
 
-    const module = await Test.createTestingModule({
+    const testModule = await Test.createTestingModule({
       providers: [
         EmailService,
         {
@@ -28,7 +28,7 @@ describe('EmailService', () => {
       ],
     }).compile();
 
-    service = module.get<EmailService>(EmailService);
+    service = testModule.get<EmailService>(EmailService);
   });
 
   afterEach(() => {

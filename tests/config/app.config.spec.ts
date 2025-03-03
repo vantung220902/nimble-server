@@ -40,7 +40,7 @@ describe('AppConfig', () => {
       process.env.AWS_S3_STORAGE_BUCKET = 'userBucket';
       process.env.RE_CAPTCHA_API = 'api-key';
 
-      const module = await Test.createTestingModule({
+      const testModule = await Test.createTestingModule({
         imports: [
           NestConfigModule.forRoot({
             load: [appConfig],
@@ -49,7 +49,7 @@ describe('AppConfig', () => {
         providers: [AppConfig],
       }).compile();
 
-      const config = module.get<AppConfig>(AppConfig);
+      const config = testModule.get<AppConfig>(AppConfig);
 
       expect(config.name).toBe('API Service');
       expect(config.port).toBe(5000);

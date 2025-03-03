@@ -17,14 +17,14 @@ describe('CommandHandlerCQRS', () => {
   let commandHandler: CommandHandler;
 
   beforeEach(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
+    const testModule: TestingModule = await Test.createTestingModule({
       providers: [
         CommandHandler,
         { provide: CommandBus, useClass: MockCommandBus },
       ],
     }).compile();
 
-    commandHandler = moduleRef.get<CommandHandler>(CommandHandler);
+    commandHandler = testModule.get<CommandHandler>(CommandHandler);
   });
 
   it('should be defined', () => {

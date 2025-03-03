@@ -28,7 +28,7 @@ describe('ApiConfig', () => {
     process.env.API_PREFIX = 'foo';
     process.env.API_VERSION = 'v5';
 
-    const module = await Test.createTestingModule({
+    const testModule = await Test.createTestingModule({
       imports: [
         NestConfigModule.forRoot({
           load: [apiConfig],
@@ -37,7 +37,7 @@ describe('ApiConfig', () => {
       providers: [ApiConfig],
     }).compile();
 
-    const config = module.get<ApiConfig>(ApiConfig);
+    const config = testModule.get<ApiConfig>(ApiConfig);
 
     expect(config.prefix).toBe('foo');
     expect(config.version).toBe('v5');

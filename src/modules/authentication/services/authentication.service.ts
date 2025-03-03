@@ -1,14 +1,14 @@
 import { AppConfig } from '@config';
 import { PrismaService } from '@database';
 import { UserDto } from '@generated';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
+import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import { JwtPayload } from 'jsonwebtoken';
 import { EXPIRATION_REFRESH_TOKEN_IN } from '../authentication.enum';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthenticationService {

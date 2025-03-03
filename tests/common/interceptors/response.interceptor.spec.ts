@@ -11,7 +11,7 @@ describe('ResponseInterceptor', () => {
     [['item 1', 'item 2']],
     [undefined],
     [null],
-    [new Error('error message')],
+    [new Error('Something wrongs')],
   ] as any[])(
     'should transform %p to { success, code, data, timestamp}',
     (data, done: any) => {

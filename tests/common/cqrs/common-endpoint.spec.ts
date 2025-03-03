@@ -13,14 +13,14 @@ describe('CommandEndpointCQRS', () => {
   let commandEndpoint: CommandEndpoint;
 
   beforeEach(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
+    const testModule: TestingModule = await Test.createTestingModule({
       providers: [
         CommandEndpoint,
         { provide: CommandBus, useClass: MockCommandBus },
       ],
     }).compile();
 
-    commandEndpoint = moduleRef.get<CommandEndpoint>(CommandEndpoint);
+    commandEndpoint = testModule.get<CommandEndpoint>(CommandEndpoint);
   });
 
   it('should be defined', () => {

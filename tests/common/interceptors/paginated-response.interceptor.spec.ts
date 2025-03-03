@@ -39,7 +39,7 @@ describe('PaginatedResponseInterceptor', () => {
     [['item 1', 'item 2']],
     [undefined],
     [null],
-    [new Error('error message')],
+    [new Error('Somethings wrong')],
     [
       {
         skippedRecords: 100,

@@ -10,18 +10,18 @@ class ExceptionFromError extends Error {
 describe('Errors', () => {
   describe('getError', () => {
     test.each([
-      [new Error('something goes wrong')],
+      [new Error('Somethings wrong')],
       [new ExceptionFromError('Custom error')],
-    ] as any[])('%p should return itself', (error) => {
+    ])('%p should return itself', (error) => {
       expect(getError(error)).toBe(error);
     });
 
     test.each([
-      ['something goes wrong'],
+      ['Somethings wrong'],
       [123],
-      { foo: 'custom message for something goes wrong' },
+      { foo: 'custom message for Somethings wrong' },
       { name: 'ErrorLike', message: 'error message', stack: 'stack' },
-    ] as any[])('%p should return new error instance', (error) => {
+    ])('%p should return new error instance', (error) => {
       const err = getError(error);
       expect(err).not.toBe(error);
     });

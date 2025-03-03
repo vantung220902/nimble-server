@@ -13,11 +13,11 @@ describe('QueryEndpointCQRS', () => {
   let queryEndpoint: QueryEndpoint;
 
   beforeEach(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
+    const testModule: TestingModule = await Test.createTestingModule({
       providers: [QueryEndpoint, { provide: QueryBus, useClass: MockQueryBus }],
     }).compile();
 
-    queryEndpoint = moduleRef.get<QueryEndpoint>(QueryEndpoint);
+    queryEndpoint = testModule.get<QueryEndpoint>(QueryEndpoint);
   });
 
   it('should be defined', () => {

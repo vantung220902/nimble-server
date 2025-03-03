@@ -68,7 +68,7 @@ describe('CrawlerService', () => {
     (puppeteer.use as jest.Mock).mockReturnValue(puppeteer);
     (puppeteer.launch as jest.Mock).mockResolvedValue(mockBrowser);
 
-    const testingModule: TestingModule = await Test.createTestingModule({
+    const testModule: TestingModule = await Test.createTestingModule({
       providers: [
         CrawlerService,
         {
@@ -78,7 +78,7 @@ describe('CrawlerService', () => {
       ],
     }).compile();
 
-    service = testingModule.get<CrawlerService>(CrawlerService);
+    service = testModule.get<CrawlerService>(CrawlerService);
 
     await service.onModuleInit();
   });

@@ -8,11 +8,11 @@ describe('ControllerBaseCQRS', () => {
   let controllerBase: TestController;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const testModule = await Test.createTestingModule({
       providers: [TestController],
     }).compile();
 
-    controllerBase = moduleRef.get<TestController>(TestController);
+    controllerBase = testModule.get<TestController>(TestController);
   });
 
   it('should create an instance of ControllerBase', () => {
