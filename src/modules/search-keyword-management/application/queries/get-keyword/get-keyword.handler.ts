@@ -71,7 +71,7 @@ export class GetKeywordHandler extends QueryHandlerBase<
     ReturnType<GetKeywordHandler['getKeywords']>
   >): GetKeywordQueryResponse {
     return {
-      status: fileUploads.pop()?.status,
+      status: fileUploads[0]?.status,
       id,
       content,
       crawledContent,

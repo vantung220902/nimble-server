@@ -6,21 +6,21 @@ import Joi from 'joi';
 describe('ApiConfig', () => {
   describe('apiSchema', () => {
     test('should API_PREFIX default to api-svc and API_VERSION default to v1', () => {
-      const result = Joi.object(apiSchema).validate({});
+      const apiSchemaValidation = Joi.object(apiSchema).validate({});
 
-      expect(result.value).toEqual({
+      expect(apiSchemaValidation.value).toEqual({
         API_VERSION: 'v1',
         API_PREFIX: 'api-svc',
       });
     });
 
     test('should pass on valid config', () => {
-      const result = Joi.object(apiSchema).validate({
+      const apiSchemaValidation = Joi.object(apiSchema).validate({
         API_VERSION: 'v1',
         API_PREFIX: 'api-svc',
       });
 
-      expect(result.error).toBeUndefined();
+      expect(apiSchemaValidation.error).toBeUndefined();
     });
   });
 

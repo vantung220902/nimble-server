@@ -51,9 +51,9 @@ describe('JwtStrategy', () => {
     cacheService.get.mockResolvedValue(null);
     (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
-    const result = await strategy.validate(mockRequest, mockPayload);
+    const strategyResponse = await strategy.validate(mockRequest, mockPayload);
 
-    expect(result).toEqual({
+    expect(strategyResponse).toEqual({
       ...mockPayload,
       email: mockUser.email,
       status: mockUser.status,

@@ -6,9 +6,9 @@ describe('LoggerConfig', () => {
 
   describe('loggerSchema', () => {
     test('should default to info', () => {
-      const result = Joi.object(loggerSchema).validate({});
+      const loggerSchemaValidation = Joi.object(loggerSchema).validate({});
 
-      expect(result).toEqual({
+      expect(loggerSchemaValidation).toEqual({
         value: {
           LOG_LEVEL: 'info',
         },

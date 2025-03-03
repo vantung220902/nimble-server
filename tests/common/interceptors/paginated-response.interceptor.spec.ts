@@ -58,12 +58,12 @@ describe('PaginatedResponseInterceptor', () => {
       const mockCallHandler = mock<CallHandler>();
       when(mockCallHandler.handle()).thenReturn(observable);
 
-      const result = new PaginatedResponseInterceptor().intercept(
+      const paginatedResponse = new PaginatedResponseInterceptor().intercept(
         instance(mockExecution),
         instance(mockCallHandler),
       );
 
-      result.subscribe((value) => {
+      paginatedResponse.subscribe((value) => {
         expect(value).toEqual(
           expect.objectContaining({
             skippedRecords: expect.toEqualAnyOf([

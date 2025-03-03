@@ -1,6 +1,11 @@
 import { ProcessKeywordsCommand } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.command';
 import { SearchKeywordManagementService } from '@modules/search-keyword-management/services';
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { RedisService } from '@redis/services';
 
@@ -9,6 +14,7 @@ export class SearchKeywordManagementSubscriber
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly processKeywordChannel: string;
+  private readonly logger = new Logger(SearchKeywordManagementService.name);
 
   constructor(
     private readonly redisService: RedisService,
@@ -37,7 +43,7 @@ export class SearchKeywordManagementSubscriber
         new ProcessKeywordsCommand(command.body, command.userId),
       );
     } catch (error) {
-      console.error(`Error processing Redis message: ${error.message}`);
+      this.logger.error(`Error processing Redis message: ${error.message}`);
     }
   }
 }

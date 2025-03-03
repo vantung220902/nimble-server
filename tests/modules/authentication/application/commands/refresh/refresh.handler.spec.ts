@@ -56,9 +56,9 @@ describe('RefreshHandler', () => {
       authService.generateToken.mockResolvedValue(mockTokens);
       authService.getRefreshTokenCacheKey.mockReturnValue(mockCacheKey);
 
-      const result = await handler.execute(mockCommand);
+      const refreshResponse = await handler.execute(mockCommand);
 
-      expect(result).toEqual({ accessToken: mockTokens.accessToken });
+      expect(refreshResponse).toEqual({ accessToken: mockTokens.accessToken });
       expect(authService.generateToken).toHaveBeenCalledWith({
         email: mockReqUser.email,
         id: mockReqUser.sub,

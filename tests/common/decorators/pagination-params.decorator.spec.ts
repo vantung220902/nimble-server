@@ -42,8 +42,8 @@ describe('PaginationParams', () => {
     });
 
     const factory = getParamDecoratorFactory();
-    const result = factory(undefined, instance(mockContext));
-    expect(result).toEqual(
+    const response = factory(undefined, instance(mockContext));
+    expect(response).toEqual(
       expect.objectContaining({
         skip: 200,
         take: 100,
@@ -66,8 +66,8 @@ describe('PaginationParams', () => {
       defaultTake: 50,
       maxAllowedSize: 100,
     };
-    const result = factory(defaultPagination, instance(mockContext));
-    expect(result).toEqual(
+    const response = factory(defaultPagination, instance(mockContext));
+    expect(response).toEqual(
       expect.objectContaining({
         skip: 200,
         take: 50,
@@ -90,8 +90,8 @@ describe('PaginationParams', () => {
       defaultTake: 50,
       maxAllowedSize: 100,
     };
-    const result = factory(defaultPagination, instance(mockContext));
-    expect(result).toEqual(
+    const response = factory(defaultPagination, instance(mockContext));
+    expect(response).toEqual(
       expect.objectContaining({
         skip: 200,
         take: 100,
@@ -114,8 +114,8 @@ describe('PaginationParams', () => {
       defaultTake: 50,
       maxAllowedSize: 100,
     };
-    const result = factory(defaultPagination, instance(mockContext));
-    expect(result).toEqual(
+    const response = factory(defaultPagination, instance(mockContext));
+    expect(response).toEqual(
       expect.objectContaining({
         skip: 0,
         take: 100,

@@ -6,7 +6,7 @@ import Joi from 'joi';
 describe('AppConfig', () => {
   describe('appSchema', () => {
     test('should pass on valid config', () => {
-      const result = Joi.object(appSchema).validate({
+      const appSchemaValidation = Joi.object(appSchema).validate({
         NODE_ENV: 'development',
         APP_NAME: 'NestJS App',
         APP_PORT: 5000,
@@ -22,7 +22,7 @@ describe('AppConfig', () => {
         RE_CAPTCHA_API: 'api-key',
       });
 
-      expect(result.error).toBeUndefined();
+      expect(appSchemaValidation.error).toBeUndefined();
     });
 
     test('get AppConfig from DI provider', async () => {

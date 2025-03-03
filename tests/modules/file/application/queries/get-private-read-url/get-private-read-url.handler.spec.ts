@@ -33,9 +33,9 @@ describe('GetPrivateReadUrlHandler', () => {
     it('should return presigned URL successfully', async () => {
       fileService.getPrivateReadUrl.mockResolvedValue(mockObjectUrl);
 
-      const result = await handler.execute(mockQuery);
+      const preSignedResponse = await handler.execute(mockQuery);
 
-      expect(result).toEqual({ url: mockObjectUrl });
+      expect(preSignedResponse).toEqual({ url: mockObjectUrl });
       expect(fileService.getPrivateReadUrl).toHaveBeenCalledWith(
         mockQuery.option,
       );

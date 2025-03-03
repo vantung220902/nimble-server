@@ -21,12 +21,12 @@ describe('ResponseInterceptor', () => {
       const mockCallHandler = mock<CallHandler>();
       when(mockCallHandler.handle()).thenReturn(observable);
 
-      const result = new ResponseInterceptor().intercept(
+      const response = new ResponseInterceptor().intercept(
         instance(mockContext),
         instance(mockCallHandler),
       );
 
-      result.subscribe((value) => {
+      response.subscribe((value) => {
         expect(value).toEqual(
           expect.objectContaining({
             success: true,

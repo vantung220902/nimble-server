@@ -131,7 +131,7 @@ describe('CrawlerService', () => {
     });
 
     it('should crawl and return data for a given keyword', async () => {
-      const result = await service.crawlKeyword('Nimble');
+      const crawledContent = await service.crawlKeyword('Nimble');
 
       expect(mockPage.setUserAgent).toHaveBeenCalled();
       expect(mockPage.setViewport).toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe('CrawlerService', () => {
       expect(mockPage.$$eval).toHaveBeenCalledTimes(2);
       expect(mockPage.close).toHaveBeenCalled();
 
-      expect(result).toEqual({
+      expect(crawledContent).toEqual({
         totalAds: 5,
         totalLinks: 10,
         content: '<html>Nimble</html>',
@@ -159,11 +159,11 @@ describe('CrawlerService', () => {
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      const result = await service.crawlKeyword('Nimble');
+      const crawledContent = await service.crawlKeyword('Nimble');
 
       expect(consoleSpy).toHaveBeenCalledWith('Error', expect.any(Error));
       expect(mockPage.close).toHaveBeenCalled();
-      expect(result).toBeUndefined();
+      expect(crawledContent).toBeUndefined();
 
       consoleSpy.mockRestore();
     });

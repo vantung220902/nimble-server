@@ -177,6 +177,8 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       channel: processingKeywordChannel,
     });
 
+    console.log('processedKeywords', processedKeywords);
+
     await this.handleFailedKeywords(processedKeywords, fileUploadId);
 
     return processedKeywords;
@@ -226,7 +228,7 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     fileUploadId: string;
     channel: string;
   }): Promise<ProcessKeywordsCommandResponse[]> {
-    const results: ProcessKeywordsCommandResponse[] = [];
+    const processKeywords: ProcessKeywordsCommandResponse[] = [];
     const queue = Array.from(keywords);
 
     while (queue.length > 0) {
@@ -235,11 +237,11 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
         this.processKeyword({ keyword, fileUploadId, channel }),
       );
 
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
+      const batchProcessedKeywords = await Promise.all(batchPromises);
+      processKeywords.push(...batchProcessedKeywords);
     }
 
-    return results;
+    return processKeywords;
   }
 
   private async separateKeywords(keywords: string[]) {

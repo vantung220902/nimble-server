@@ -122,7 +122,7 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     return keywords.map(
       ({ createdAt, fileUploads, content, id, resolvedAt }) => ({
         id,
-        status: fileUploads.pop()?.status,
+        status: fileUploads[0].status,
         content,
         createdAt,
         resolvedAt,

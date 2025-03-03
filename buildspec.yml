@@ -35,7 +35,7 @@ phases:
       - yarn dlx audit-ci -l
 
       - yarn prisma:g
-      # - yarn test:ci
+      - yarn test:ci
 
       # build
       - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ECR_REPOSITORY_URL}
