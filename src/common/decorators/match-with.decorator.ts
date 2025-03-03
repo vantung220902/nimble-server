@@ -1,7 +1,7 @@
 import {
   registerDecorator,
-  ValidationOptions,
   ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 
 export const MatchWith = (
@@ -22,10 +22,8 @@ export const MatchWith = (
 
           return value === targetValue;
         },
-        defaultMessage(args: ValidationArguments) {
-          const [targetProperty] = args.constraints as [string];
-
-          return `${property} must match with ${targetProperty}`;
+        defaultMessage() {
+          return `${property} must match with ${propertyName}`;
         },
       },
     });

@@ -44,7 +44,7 @@ export const ApiResponse = <TModel extends Type<any>>(model?: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/sign-in',
+            example: '/api/v1/keywords',
           },
         },
       },
@@ -85,7 +85,7 @@ export const ApiResponse = <TModel extends Type<any>>(model?: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/sign-in',
+            example: '/api/v1/keywords',
           },
         },
       },
@@ -127,7 +127,7 @@ export const ApiResponse = <TModel extends Type<any>>(model?: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/sign-in',
+            example: '/api/v1/keywords',
           },
         },
       },
@@ -246,7 +246,7 @@ export const ApiListResponse = <TModel extends Type<any>>(model: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/results',
+            example: '/api/v1/keywords',
           },
         },
       },
@@ -287,7 +287,7 @@ export const ApiListResponse = <TModel extends Type<any>>(model: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/results',
+            example: '/api/v1/keywords',
           },
         },
       },
@@ -329,7 +329,7 @@ export const ApiListResponse = <TModel extends Type<any>>(model: TModel) => {
           },
           path: {
             type: 'string',
-            example: '/api/v1/results',
+            example: '/api/v1/keywords',
           },
         },
       },

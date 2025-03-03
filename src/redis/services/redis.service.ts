@@ -34,6 +34,6 @@ export class RedisService {
   }
 
   public unsubscribe(channel: string) {
-    this.publisher.unsubscribe(channel);
+    this.subscriber.unsubscribe(channel);
   }
 }

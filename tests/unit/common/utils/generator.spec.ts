@@ -1,4 +1,7 @@
-import { filterOperationByMode } from '@common/utils/generator';
+import {
+  filterOperationByMode,
+  normalizeFileName,
+} from '@common/utils/generator';
 import { Prisma } from '@prisma/client';
 
 describe('GeneratorUtils', () => {
@@ -23,6 +26,30 @@ describe('GeneratorUtils', () => {
         contains: 'test',
         mode: Prisma.QueryMode.insensitive,
       });
+    });
+  });
+
+  describe('normalizeFileName', () => {
+    test('should return undefined if input is undefined', () => {
+      expect(normalizeFileName(undefined)).toBeUndefined();
+    });
+
+    test('should replace non-alphanumeric characters with underscores and convert to lowercase', () => {
+      expect(normalizeFileName('Keyword File@@.csv')).toEqual(
+        'keyword_file__.csv',
+      );
+    });
+
+    test('should handle strings with no special characters', () => {
+      expect(normalizeFileName('keywords.csv')).toEqual('keywords.csv');
+    });
+
+    test('should handle strings with only special characters', () => {
+      expect(normalizeFileName('@@@')).toEqual('___');
+    });
+
+    test('should handle empty strings', () => {
+      expect(normalizeFileName('')).toBeUndefined();
     });
   });
 });
