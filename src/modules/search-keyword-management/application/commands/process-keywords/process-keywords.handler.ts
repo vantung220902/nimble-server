@@ -177,8 +177,6 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       channel: processingKeywordChannel,
     });
 
-    console.log('processedKeywords', processedKeywords);
-
     await this.handleFailedKeywords(processedKeywords, fileUploadId);
 
     return processedKeywords;
