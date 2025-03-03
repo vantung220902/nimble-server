@@ -4,7 +4,6 @@ import { filterOperationByMode } from '@common/utils';
 import { PrismaService } from '@database';
 import { QueryHandler } from '@nestjs/cqrs';
 import { Prisma } from '@prisma/client';
-
 import { GetKeywordsQuery } from './get-keywords.query';
 import {
   GetKeywordsQueryResponse,
@@ -39,50 +38,64 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     reqUser,
     query: { take, skip, fileUploadId, search },
   }: GetKeywordsQuery) {
-    const andWhereConditions: Prisma.Enumerable<Prisma.UserKeywordUploadWhereInput> =
-      [
-        {
-          fileUpload: {
-            userId: reqUser.sub,
+    const andWhereConditions: Prisma.Enumerable<Prisma.KeywordWhereInput> = [
+      {
+        fileUploads: {
+          some: {
+            fileUpload: {
+              userId: reqUser.sub,
+            },
           },
         },
-      ];
+      },
+    ];
 
     if (fileUploadId) {
       andWhereConditions.push({
-        fileUploadId,
+        fileUploads: {
+          some: {
+            fileUploadId,
+          },
+        },
       });
     }
 
     if (search) {
       andWhereConditions.push({
-        keyword: {
-          OR: [
-            { content: filterOperationByMode(search) },
-            {
-              crawledContent: {
-                content: filterOperationByMode(search),
-              },
+        OR: [
+          { content: filterOperationByMode(search) },
+          {
+            crawledContent: {
+              content: filterOperationByMode(search),
             },
-          ],
-        },
+          },
+        ],
       });
     }
 
     const [foundKeywords, totalKeywords] = await Promise.all([
-      this.dbContext.userKeywordUpload.findMany({
+      this.dbContext.keyword.findMany({
         where: {
           AND: andWhereConditions,
         },
         select: {
-          keywordId: true,
+          id: true,
           resolvedAt: true,
           createdAt: true,
-          status: true,
-          keyword: {
-            select: {
-              content: true,
+          content: true,
+          fileUploads: {
+            where: {
+              fileUpload: {
+                userId: reqUser.sub,
+              },
             },
+            select: {
+              status: true,
+            },
+            orderBy: {
+              resolvedAt: Prisma.SortOrder.desc,
+            },
+            take: 1,
           },
         },
         take,
@@ -91,7 +104,7 @@ export class GetKeywordsHandler extends QueryHandlerBase<
           resolvedAt: Prisma.SortOrder.desc,
         },
       }),
-      this.dbContext.userKeywordUpload.count({
+      this.dbContext.keyword.count({
         where: {
           AND: andWhereConditions,
         },
@@ -107,9 +120,9 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     >['foundKeywords'],
   ): GetKeywordsResponse[] {
     return keywords.map(
-      ({ keyword: { content }, keywordId, status, createdAt, resolvedAt }) => ({
-        id: keywordId,
-        status,
+      ({ createdAt, fileUploads, content, id, resolvedAt }) => ({
+        id,
+        status: fileUploads.pop()?.status,
         content,
         createdAt,
         resolvedAt,

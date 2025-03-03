@@ -1,10 +1,13 @@
 import { QueryEndpoint } from '@common/cqrs';
-import { PaginatedApiResponse } from '@common/decorators';
+import { ApiResponse, PaginatedApiResponse } from '@common/decorators';
 import { AuthenticationGuard } from '@common/guards';
 import {
   PaginatedResponseInterceptor,
   ResponseInterceptor,
 } from '@common/interceptors';
+import { GetKeywordQuery } from '@modules/search-keyword-management/application/queries/get-keyword/get-keyword.query';
+import { GetKeywordRequestParam } from '@modules/search-keyword-management/application/queries/get-keyword/get-keyword.request-param';
+import { GetKeywordQueryResponse } from '@modules/search-keyword-management/application/queries/get-keyword/get-keyword.response';
 import { GetKeywordsQuery } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.query';
 import { GetKeywordsRequestQuery } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.request-query';
 import { GetKeywordsQueryResponse } from '@modules/search-keyword-management/application/queries/get-keywords/get-keywords.response';
@@ -14,6 +17,7 @@ import { GetUploadedFilesQueryResponse } from '@modules/search-keyword-managemen
 import {
   Controller,
   Get,
+  Param,
   Query,
   Req,
   UseGuards,
@@ -29,7 +33,6 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
   path: 'search-keywords',
 })
 @UseGuards(AuthenticationGuard)
-@UseInterceptors(ResponseInterceptor)
 export class SearchKeywordManagementQueryEndpoint extends QueryEndpoint {
   constructor(protected queryBus: QueryBus) {
     super(queryBus);
@@ -52,13 +55,26 @@ export class SearchKeywordManagementQueryEndpoint extends QueryEndpoint {
   @ApiOperation({ description: 'Get list keywords endpoint' })
   @UseInterceptors(PaginatedResponseInterceptor)
   @PaginatedApiResponse(GetKeywordsQueryResponse)
-  @Get('keywords')
+  @Get()
   public getKeywords(
     @Req() req,
     @Query() query: GetKeywordsRequestQuery,
   ): Promise<GetKeywordsQueryResponse> {
     return this.queryBus.execute<GetKeywordsQuery, GetKeywordsQueryResponse>(
       new GetKeywordsQuery(req.user, query),
+    );
+  }
+
+  @ApiOperation({ description: 'Get list keywords endpoint' })
+  @UseInterceptors(ResponseInterceptor)
+  @ApiResponse(GetKeywordQueryResponse)
+  @Get(':id')
+  public getKeyword(
+    @Req() req,
+    @Param() { id }: GetKeywordRequestParam,
+  ): Promise<GetKeywordQueryResponse> {
+    return this.queryBus.execute<GetKeywordQuery, GetKeywordQueryResponse>(
+      new GetKeywordQuery(req.user, id),
     );
   }
 }
