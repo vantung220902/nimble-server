@@ -24,12 +24,10 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 
 @ApiTags('Search Keywords Management')
-@ApiBearerAuth()
 @Controller({
   version: '1',
   path: 'search-keywords',
 })
-@UseGuards(AuthenticationGuard)
 @UseInterceptors(ResponseInterceptor)
 export class SearchKeywordManagementCommandEndpoint extends CommandEndpoint {
   constructor(
@@ -41,6 +39,8 @@ export class SearchKeywordManagementCommandEndpoint extends CommandEndpoint {
 
   @ApiOperation({ description: 'Process keywords endpoint' })
   @ApiListResponse(ProcessKeywordsCommandResponse)
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
   @Post('process')
   public search(
     @Request() request,
@@ -61,6 +61,8 @@ export class SearchKeywordManagementCommandEndpoint extends CommandEndpoint {
 
   @ApiOperation({ description: 'Upload file keywords endpoint' })
   @ApiResponse()
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
   @Post('upload')
   public upload(
     @Request() request,
