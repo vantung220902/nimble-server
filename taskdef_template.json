@@ -88,6 +88,10 @@
       {
         "name": "SENDGRID_API_KEY",
         "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/SENDGRID_API_KEY"
+      },
+      {
+        "name": "RE_CAPTCHA_API",
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/RE_CAPTCHA_API"
       }
       ]
     }

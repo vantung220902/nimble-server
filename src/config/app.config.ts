@@ -80,7 +80,6 @@ export class AppConfig {
   }
 
   public get isProduction(): boolean {
-    console.log('this.env', this.env);
     return this.env === 'production';
   }
 
