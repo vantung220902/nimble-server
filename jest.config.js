@@ -7,7 +7,10 @@ module.exports = {
       statements: 80,
     },
   },
-  collectCoverageFrom: ['src/**/*.{js,ts}'],
+  collectCoverageFrom: [
+    'src/**/*.{service,handler,config,controller,subscriber}.{js,ts}',
+    'src/common/**/*',
+  ],
   preset: 'ts-jest',
   roots: ['<rootDir>'],
   testMatch: [

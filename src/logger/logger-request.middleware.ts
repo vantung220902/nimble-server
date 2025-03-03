@@ -6,7 +6,7 @@ const decodeJwt = (token: string) => {
 
 export function loggerRequestMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) {
   const authorization = req.headers['authorization'];
@@ -14,9 +14,8 @@ export function loggerRequestMiddleware(
   if (authorization) {
     const data = decodeJwt(authorization);
     req.headers['x-request-sub'] = data.sub;
-    req.headers['x-request-user-id'] = data.user_id;
-    const username = data['preferred_username'] || data['cognito:username'];
-    req.headers['x-request-username'] = username;
+    req.headers['x-request-user-id'] = data.sub;
+    req.headers['x-request-username'] = data.email;
   }
 
   next();

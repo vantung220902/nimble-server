@@ -18,7 +18,7 @@ export const appSchema = {
   EMAIL_FORM: Joi.string(),
   SENDGRID_API_KEY: Joi.string(),
   WEB_URL: Joi.string(),
-  AWS_S3_STORAGE_BUCKET_ARN: Joi.string(),
+  AWS_S3_STORAGE_BUCKET: Joi.string(),
   RE_CAPTCHA_API: Joi.string(),
 };
 

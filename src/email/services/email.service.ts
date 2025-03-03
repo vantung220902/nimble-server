@@ -1,7 +1,7 @@
 import { AppConfig } from '@config';
 import { Injectable } from '@nestjs/common';
-import { SendHtmlEmailOptions } from '../interfaces';
 import SendGrid, { MailDataRequired } from '@sendgrid/mail';
+import { SendHtmlEmailOptions } from '../interfaces';
 
 @Injectable()
 export class EmailService {
@@ -55,7 +55,7 @@ export class EmailService {
         
         <p>Or click this link to verify your account: <a href="${payload.link}">Verify Account</a></p>
         
-        <p>This code will expire in 3 minutes.</p>
+        <p>This code will expire in 30 minutes.</p>
         
         <p>Regards,<br>Nimble Code Challenge</p>
       </div>
