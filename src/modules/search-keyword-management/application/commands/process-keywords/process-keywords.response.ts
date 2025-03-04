@@ -1,5 +1,5 @@
 import { CrawledGoogleResponse } from '@modules/crawler/interfaces';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ProcessingStatus } from '@prisma/client';
 
 export class ProcessKeywordsCommandResponse {
@@ -7,7 +7,12 @@ export class ProcessKeywordsCommandResponse {
     description: 'Keyword',
     example: 'Nimble',
   })
-  keyword: string;
+  content: string;
+
+  @ApiPropertyOptional({
+    description: 'Keyword id',
+  })
+  keywordId?: string;
 
   @ApiProperty({
     description: 'Status',

@@ -47,8 +47,6 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
         const { solutions, solved } = await page.solveRecaptchas();
         this.logger.debug(`Solution ${JSON.stringify(solutions, null, 5)}`);
         this.logger.debug(`Solved ${JSON.stringify(solved, null, 5)}`);
-
-        await waiter(2000);
       }
     }
   }
@@ -76,6 +74,8 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
       );
 
       await this.detectCaptcha(page);
+
+      await waiter(200);
 
       const content = await page.content();
       const totalAds = await this.countAds(page);

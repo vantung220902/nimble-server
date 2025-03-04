@@ -36,32 +36,40 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     return this.process(command);
   }
 
-  private async handleCompletedKeywords(
-    fileUploadId: string,
-    { content, keyword, totalAds, totalLinks }: CrawledGoogleResponse,
-  ) {
+  private async handleCompletedKeywords({
+    content,
+    fileUploadId,
+    crawledResponse,
+  }: {
+    fileUploadId: string;
+    content: string;
+    crawledResponse: CrawledGoogleResponse;
+  }) {
+    console.log('crawlContent', crawledResponse);
+
+    const crawlContentPayload = {
+      totalGoogleAds: crawledResponse.totalAds,
+      totalLinks: crawledResponse.totalLinks,
+      content: crawledResponse.content,
+    };
+
     const createdKeyword = await this.dbContext.keyword.upsert({
       where: {
-        content: keyword,
+        content,
       },
       create: {
-        content: keyword,
+        content,
         resolvedAt: new Date(),
         crawledContent: {
-          create: {
-            totalGoogleAds: totalAds,
-            totalLinks,
-            content,
-          },
+          create: crawlContentPayload,
         },
       },
       update: {
         resolvedAt: new Date(),
         crawledContent: {
-          update: {
-            totalGoogleAds: totalAds,
-            totalLinks,
-            content,
+          upsert: {
+            create: crawlContentPayload,
+            update: crawlContentPayload,
           },
         },
       },
@@ -76,20 +84,25 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
         },
       }),
       this.cacheService.set(
-        this.searchKeywordManagementService.getCacheKey(keyword),
+        this.searchKeywordManagementService.getCacheKey(content.toLowerCase()),
         createdKeyword.id,
         EXPIRATION_KEYWORD_SECONDS,
       ),
     ]);
+
+    return createdKeyword;
   }
 
-  private async handleFailedKeywords(
-    processedKeywords: ProcessKeywordsCommandResponse[],
-    fileUploadId: string,
-  ) {
+  private async handleFailedKeywords({
+    processedKeywords,
+    fileUploadId,
+  }: {
+    processedKeywords: ProcessKeywordsCommandResponse[];
+    fileUploadId: string;
+  }) {
     const keywords = processedKeywords
       .filter((keyword) => keyword.status === ProcessingStatus.FAILED)
-      .map(({ keyword }) => keyword);
+      .map(({ content }) => content);
 
     const failedKeywords = await this.dbContext.keyword.findMany({
       where: {
@@ -104,13 +117,13 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     });
 
     await Promise.all(
-      keywords.map(async (keyword) => {
-        let failedKeyword = failedKeywords.find((fk) => fk.content === keyword);
+      keywords.map(async (content) => {
+        let failedKeyword = failedKeywords.find((fk) => fk.content === content);
 
         if (!failedKeyword) {
           failedKeyword = await this.dbContext.keyword.create({
             data: {
-              content: keyword,
+              content,
             },
           });
         }
@@ -140,31 +153,37 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       await this.separateKeywords(uniqueKeywords);
 
     if (cachedKeywords.length > 0) {
-      const insertingKeywords = cachedKeywords.map(({ keywordId }) => ({
-        status: ProcessingStatus.COMPLETED,
-        fileUploadId,
-        keywordId,
-      }));
-
       await this.dbContext.userKeywordUpload.createMany({
-        data: insertingKeywords,
+        data: cachedKeywords.map(({ keywordId }) => ({
+          status: ProcessingStatus.COMPLETED,
+          fileUploadId,
+          keywordId,
+        })),
       });
 
       this.redisService.publish(
         processingKeywordChannel,
         JSON.stringify({
-          data: insertingKeywords,
+          data: cachedKeywords.map(({ content, keywordId }) => ({
+            status: ProcessingStatus.COMPLETED,
+            fileUploadId,
+            content,
+            keywordId,
+          })),
         }),
       );
     }
 
-    if (uncachedKeywords.length === 0) return [];
+    console.log('uniqueKeywords.length', uniqueKeywords.length);
+    console.log('cachedKeywords.length', cachedKeywords.length);
+
+    if (cachedKeywords.length === uniqueKeywords.length) return [];
 
     this.redisService.publish(
       processingKeywordChannel,
       JSON.stringify({
-        data: uncachedKeywords.map((keyword) => ({
-          keyword,
+        data: uncachedKeywords.map((content) => ({
+          content,
           fileUploadId,
           status: ProcessingStatus.PROCESSING,
         })),
@@ -177,32 +196,42 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       channel: processingKeywordChannel,
     });
 
-    await this.handleFailedKeywords(processedKeywords, fileUploadId);
+    await this.handleFailedKeywords({
+      processedKeywords,
+      fileUploadId,
+    });
 
     return processedKeywords;
   }
 
   private async processKeyword({
-    keyword,
+    content,
     fileUploadId,
     channel,
   }: {
-    keyword: string;
+    content: string;
     fileUploadId: string;
     channel: string;
   }): Promise<ProcessKeywordsCommandResponse> {
     const response: ProcessKeywordsCommandResponse = {
-      keyword,
+      content,
       status: ProcessingStatus.PROCESSING,
     };
 
     try {
-      const crawledResponse = await this.crawlerService.crawlKeyword(keyword);
+      const crawledResponse = await this.crawlerService.crawlKeyword(content);
+
       response.status = ProcessingStatus.COMPLETED;
-      await this.handleCompletedKeywords(fileUploadId, crawledResponse);
+      const createdKeyword = await this.handleCompletedKeywords({
+        fileUploadId,
+        content,
+        crawledResponse,
+      });
+
+      response.keywordId = createdKeyword.id;
     } catch (error) {
       this.logger.error(
-        `CrawlerService crawlKeyword Error for "${keyword}": ${error}`,
+        `CrawlerService crawlKeyword Error for "${content}": ${error}`,
       );
       response.status = ProcessingStatus.FAILED;
     }
@@ -231,8 +260,8 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
 
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY_KEYWORDS_LIMIT);
-      const batchPromises = batch.map((keyword) =>
-        this.processKeyword({ keyword, fileUploadId, channel }),
+      const batchPromises = batch.map((content) =>
+        this.processKeyword({ content, fileUploadId, channel }),
       );
 
       const batchProcessedKeywords = await Promise.all(batchPromises);
@@ -243,21 +272,20 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
   }
 
   private async separateKeywords(keywords: string[]) {
-    const cachedKeywords: Array<{ keywordId: string; keyword: string }> = [];
+    const cachedKeywords: Array<{ keywordId: string; content: string }> = [];
     const uncachedKeywords: string[] = [];
 
     await Promise.all(
-      keywords.map(async (keyword) => {
-        keyword = keyword.toLowerCase();
-
-        const cacheKey =
-          this.searchKeywordManagementService.getCacheKey(keyword);
+      keywords.map(async (content) => {
+        const cacheKey = this.searchKeywordManagementService.getCacheKey(
+          content.toLowerCase(),
+        );
         const keywordId = await this.cacheService.get<string>(cacheKey);
 
         if (keywordId) {
-          cachedKeywords.push({ keywordId, keyword });
+          cachedKeywords.push({ keywordId, content });
         } else {
-          uncachedKeywords.push(keyword);
+          uncachedKeywords.push(content);
         }
       }),
     );

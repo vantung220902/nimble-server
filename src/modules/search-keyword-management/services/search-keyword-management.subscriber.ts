@@ -1,3 +1,4 @@
+import { waiter } from '@common/utils';
 import { ProcessKeywordsCommand } from '@modules/search-keyword-management/application/commands/process-keywords/process-keywords.command';
 import { SearchKeywordManagementService } from '@modules/search-keyword-management/services';
 import {
@@ -38,6 +39,8 @@ export class SearchKeywordManagementSubscriber
   private async processMessage(message: string) {
     try {
       const command: ProcessKeywordsCommand = JSON.parse(message);
+
+      await waiter(150);
 
       await this.commandBus.execute(
         new ProcessKeywordsCommand(command.body, command.userId),
