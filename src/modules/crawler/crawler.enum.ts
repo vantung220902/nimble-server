@@ -12,12 +12,8 @@ export const GoogleCrawlerOption = {
   primaryAdElement: 'div.RnJeZd.top.pla-unit-title',
   linkTag: 'a',
   viewPort: {
-    width: 1920 + Math.floor(Math.random() * 100),
-    height: 1080 + Math.floor(Math.random() * 100),
-    deviceScaleFactor: 1,
-    hasTouch: false,
-    isLandscape: true,
-    isMobile: false,
+    width: 1200,
+    height: 800,
   },
   cookies: [
     { name: 'NID', value: '123=abcd', domain: '.google.com' },

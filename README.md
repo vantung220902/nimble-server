@@ -1,16 +1,16 @@
-# Nimble
-
-Nimble
+# Nimble - Web Coding Challenge
 
 ## Setup
-
+First, make sure you installed Nodejs and already have Yarn on your machine to run and set up the project.
+Download AWS CLI in this link: https://docs.aws.amazon.com/cli/v1/userguide/cli-chap-install.html
 ### Database
+Because the database and redis is hosted in a private zone, if you want to access the database, you have to access through a aws ssm start-session.
 
-Because the database is hosted in a private zone, if you want to access the database, you have to access through a PortForwardingSession.
+Set aws configure --profile nimble to use credentials from AWS Development Account. Contact me to get AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 
-Set aws configure --profile nimble to use credentials from AWS Development Account. Refer to <https://dh-jira.atlassian.net/l/cp/htPJDFBU>
+Run `yarn db` to forward Redis connection to localhost environment with port `5433` to avoid the conflict with the local port 5432. The connect the database with host `localhost`, port `5433` and keep username, password and database as the original connection in RDS.
 
-Run `yarn db` to forward RDS connection to localhost environment with port `5433` to avoid the conflict with the local port 5432. The connect the database with host `localhost`, port `5433` and keep username, password and database as the original connection in RDS. Check ssh username in db script in package.json to make sure it matches with your ssh username.
+Run `yarn redis` to forward RDS connection to localhost environment with port `6378` to avoid the conflict with the local port 6379. The connect the database with host `localhost`, port `6378` and keep username, password and database as the original connection in RDS. 
 
 ## Configuration
 
@@ -56,8 +56,3 @@ This project uses `eslint` to enforce coding styles.
 
 Use `yarn lint` to validate your code. No changes will be made.
 
-## Installing New Packages
-
-When installing a new package, only install it as a dependency if the application needs the package to run in production.
-All other packages should be installed as a dev dependency.
-The build scripts will only install non-dev dependencies to keep the package as small as possible.

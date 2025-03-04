@@ -168,7 +168,7 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
             status: ProcessingStatus.COMPLETED,
             fileUploadId,
             content,
-            keywordId,
+            id: keywordId,
           })),
         }),
       );
@@ -234,7 +234,7 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
         crawledResponse,
       });
 
-      response.keywordId = createdKeyword.id;
+      response.id = createdKeyword.id;
     } catch (error) {
       this.logger.error(
         `CrawlerService crawlKeyword Error for "${content}": ${error}`,

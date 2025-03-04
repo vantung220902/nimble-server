@@ -1,4 +1,3 @@
-import { waiter } from '@common/utils';
 import { AppConfig } from '@config';
 import { GoogleCrawlerOption } from '@modules/crawler/crawler.enum';
 import { CrawledGoogleResponse } from '@modules/crawler/interfaces';
@@ -75,7 +74,9 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
 
       await this.detectCaptcha(page);
 
-      await waiter(200);
+      await page.waitForSelector(GoogleCrawlerOption.selector, {
+        timeout: 50000,
+      });
 
       const content = await page.content();
       const totalAds = await this.countAds(page);

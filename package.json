@@ -34,7 +34,8 @@
     "prisma:g": "npx prisma generate",
     "fix:husky": "chmod +x .husky/pre-commit && chmod +x bin/detect-secrets",
     "commit": "git-cz",
-    "prepare": "husky"
+    "prepare": "husky",
+    "init-be": "bash ./bash/init-be.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.716.0",

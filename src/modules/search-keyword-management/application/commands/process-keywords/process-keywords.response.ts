@@ -12,7 +12,7 @@ export class ProcessKeywordsCommandResponse {
   @ApiPropertyOptional({
     description: 'Keyword id',
   })
-  keywordId?: string;
+  id?: string;
 
   @ApiProperty({
     description: 'Status',

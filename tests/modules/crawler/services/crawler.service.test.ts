@@ -46,6 +46,7 @@ describe('CrawlerService', () => {
       setViewport: jest.fn().mockResolvedValue(undefined),
       setCookie: jest.fn().mockResolvedValue(undefined),
       goto: jest.fn().mockResolvedValue(undefined),
+      waitForSelector: jest.fn(),
       content: jest.fn().mockResolvedValue('<html>Nimble</html>'),
       close: jest.fn().mockResolvedValue(undefined),
       evaluate: jest.fn().mockResolvedValue(false),
@@ -134,11 +135,19 @@ describe('CrawlerService', () => {
       const crawledContent = await service.crawlKeyword('Nimble');
 
       expect(mockPage.setUserAgent).toHaveBeenCalled();
-      expect(mockPage.setViewport).toHaveBeenCalled();
-      expect(mockPage.setCookie).toHaveBeenCalled();
+      expect(mockPage.setViewport).toHaveBeenCalledWith(
+        GoogleCrawlerOption.viewPort,
+      );
+      expect(mockPage.setCookie).toHaveBeenCalledWith(
+        ...GoogleCrawlerOption.cookies,
+      );
       expect(mockPage.goto).toHaveBeenCalledWith(
-        expect.stringContaining(`search?q=${encodeURIComponent('Nimble')}`),
+        `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent('Nimble')}`,
         { waitUntil: 'load' },
+      );
+      expect(mockPage.waitForSelector).toHaveBeenCalledWith(
+        GoogleCrawlerOption.selector,
+        { timeout: 50000 },
       );
       expect(mockPage.content).toHaveBeenCalled();
       expect(mockPage.$$eval).toHaveBeenCalledTimes(2);
