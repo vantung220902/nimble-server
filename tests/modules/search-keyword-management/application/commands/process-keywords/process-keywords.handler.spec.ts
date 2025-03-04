@@ -55,6 +55,9 @@ describe('ProcessKeywordsHandler', () => {
         create: jest.fn(),
         createMany: jest.fn(),
       },
+      fileKeywordsUpload: {
+        update: jest.fn(),
+      },
     } as any as jest.MockedObject<PrismaService>;
 
     searchKeywordManagementService = {

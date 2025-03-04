@@ -174,9 +174,6 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
       );
     }
 
-    console.log('uniqueKeywords.length', uniqueKeywords.length);
-    console.log('cachedKeywords.length', cachedKeywords.length);
-
     if (cachedKeywords.length === uniqueKeywords.length) return [];
 
     this.redisService.publish(
@@ -199,6 +196,15 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     await this.handleFailedKeywords({
       processedKeywords,
       fileUploadId,
+    });
+
+    await this.dbContext.fileKeywordsUpload.update({
+      where: {
+        id: fileUploadId,
+      },
+      data: {
+        status: ProcessingStatus.COMPLETED,
+      },
     });
 
     return processedKeywords;
