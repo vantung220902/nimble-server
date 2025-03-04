@@ -1,10 +1,14 @@
 import { PaginatedApiResponseDto } from '@common/dtos';
-import { KeywordDto } from '@generated';
+import { CrawlContentDto, KeywordDto } from '@generated';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProcessingStatus } from '@prisma/client';
 
 export class GetKeywordsResponse extends KeywordDto {
   status: ProcessingStatus;
+  crawledContent?: Pick<
+    CrawlContentDto,
+    'totalGoogleAds' | 'totalLinks' | 'content'
+  >;
 }
 
 export class GetKeywordsQueryResponse extends PaginatedApiResponseDto<GetKeywordsResponse> {

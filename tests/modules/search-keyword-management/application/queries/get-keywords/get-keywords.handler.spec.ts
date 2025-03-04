@@ -109,14 +109,7 @@ describe('GetKeywordsHandler', () => {
               },
             },
             {
-              OR: [
-                { content: expect.any(Object) },
-                {
-                  crawledContent: {
-                    content: expect.any(Object),
-                  },
-                },
-              ],
+              OR: [{ content: expect.any(Object) }],
             },
           ],
         },
@@ -125,6 +118,7 @@ describe('GetKeywordsHandler', () => {
           resolvedAt: true,
           createdAt: true,
           content: true,
+          crawledContent: false,
           fileUploads: {
             where: {
               fileUpload: {

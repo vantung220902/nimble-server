@@ -36,7 +36,7 @@ export class GetKeywordsHandler extends QueryHandlerBase<
 
   private async getKeywords({
     reqUser,
-    query: { take, skip, fileUploadId, search },
+    query: { take, skip, fileUploadId, search, isGlobalSearch },
   }: GetKeywordsQuery) {
     const andWhereConditions: Prisma.Enumerable<Prisma.KeywordWhereInput> = [
       {
@@ -61,15 +61,19 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     }
 
     if (search) {
-      andWhereConditions.push({
-        OR: [
-          { content: filterOperationByMode(search) },
-          {
-            crawledContent: {
-              content: filterOperationByMode(search),
-            },
+      const orWhereConditions: Prisma.Enumerable<Prisma.KeywordWhereInput> = [
+        { content: filterOperationByMode(search) },
+      ];
+      if (isGlobalSearch) {
+        orWhereConditions.push({
+          crawledContent: {
+            content: filterOperationByMode(search),
           },
-        ],
+        });
+      }
+
+      andWhereConditions.push({
+        OR: orWhereConditions,
       });
     }
 
@@ -83,6 +87,15 @@ export class GetKeywordsHandler extends QueryHandlerBase<
           resolvedAt: true,
           createdAt: true,
           content: true,
+          crawledContent: isGlobalSearch
+            ? {
+                select: {
+                  totalGoogleAds: true,
+                  totalLinks: true,
+                  content: true,
+                },
+              }
+            : false,
           fileUploads: {
             where: {
               fileUpload: {
@@ -120,12 +133,20 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     >['foundKeywords'],
   ): GetKeywordsResponse[] {
     return keywords.map(
-      ({ createdAt, fileUploads, content, id, resolvedAt }) => ({
+      ({
+        createdAt,
+        fileUploads,
+        content,
+        id,
+        resolvedAt,
+        crawledContent,
+      }) => ({
         id,
         status: fileUploads[0].status,
         content,
         createdAt,
         resolvedAt,
+        crawledContent,
       }),
     );
   }
