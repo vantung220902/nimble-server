@@ -40,7 +40,7 @@ export class SearchKeywordManagementSubscriber
     try {
       const command: ProcessKeywordsCommand = JSON.parse(message);
 
-      await waiter(150);
+      await waiter(3000);
 
       await this.commandBus.execute(
         new ProcessKeywordsCommand(command.body, command.userId),

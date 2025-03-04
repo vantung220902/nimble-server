@@ -81,7 +81,7 @@ describe('SearchKeywordManagementSubscriber', () => {
 
       subscriber.onModuleInit();
       subscriptionCallback(mockMessage);
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       expect(commandBus.execute).toHaveBeenCalledWith(
         expect.any(ProcessKeywordsCommand),
@@ -134,7 +134,7 @@ describe('SearchKeywordManagementSubscriber', () => {
 
       subscriptionCallback(mockMessage);
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       expect(loggerSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error processing Redis message'),
