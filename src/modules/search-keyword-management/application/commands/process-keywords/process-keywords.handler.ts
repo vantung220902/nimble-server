@@ -45,8 +45,6 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     content: string;
     crawledResponse: CrawledGoogleResponse;
   }) {
-    console.log('crawlContent', crawledResponse);
-
     const crawlContentPayload = {
       totalGoogleAds: crawledResponse.totalAds,
       totalLinks: crawledResponse.totalLinks,
@@ -76,11 +74,20 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
     });
 
     await Promise.all([
-      this.dbContext.userKeywordUpload.create({
-        data: {
+      this.dbContext.userKeywordUpload.upsert({
+        where: {
+          fileUploadId_keywordId: {
+            fileUploadId,
+            keywordId: createdKeyword.id,
+          },
+        },
+        create: {
           status: ProcessingStatus.COMPLETED,
           fileUploadId,
           keywordId: createdKeyword.id,
+        },
+        update: {
+          status: ProcessingStatus.COMPLETED,
         },
       }),
       this.cacheService.set(
@@ -121,15 +128,31 @@ export class ProcessKeywordsHandler extends CommandHandlerBase<
         let failedKeyword = failedKeywords.find((fk) => fk.content === content);
 
         if (!failedKeyword) {
-          failedKeyword = await this.dbContext.keyword.create({
-            data: {
+          failedKeyword = await this.dbContext.keyword.upsert({
+            where: {
+              content,
+            },
+            create: {
+              content,
+            },
+            update: {
               content,
             },
           });
         }
 
-        return this.dbContext.userKeywordUpload.create({
-          data: {
+        return this.dbContext.userKeywordUpload.upsert({
+          where: {
+            fileUploadId_keywordId: {
+              fileUploadId,
+              keywordId: failedKeyword.id,
+            },
+          },
+          update: {
+            status: ProcessingStatus.FAILED,
+            resolvedAt: new Date(),
+          },
+          create: {
             fileUploadId,
             keywordId: failedKeyword.id,
             status: ProcessingStatus.FAILED,
