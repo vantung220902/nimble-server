@@ -21,4 +21,4 @@ export const GoogleCrawlerOption = {
   ],
 };
 
-export const EXPIRATION_KEYWORD_SECONDS = 18000 * 1000;
+export const EXPIRATION_KEYWORD_SECONDS = 24 * 60 * 60 * 1000;
