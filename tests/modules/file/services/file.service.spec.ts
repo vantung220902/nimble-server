@@ -2,6 +2,11 @@ import { AppConfig } from '@config';
 import { FileTypeEnum } from '@modules/file/file.enum';
 import { FileService } from '@modules/file/services';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Readable } from 'stream';
+
+const mockS3Send = jest.fn().mockResolvedValue({
+  Body: Readable.from(['keyword,value\nvalue1\nvalue2']),
+});
 
 jest.mock('@aws-sdk/client-s3', () => {
   return {
@@ -10,7 +15,9 @@ jest.mock('@aws-sdk/client-s3', () => {
         .fn()
         .mockResolvedValue('https://user-storage-dev/key/keyword.csv'),
     }),
-    S3Client: jest.fn().mockReturnValue({}),
+    S3Client: jest.fn().mockReturnValue({
+      send: () => mockS3Send(),
+    }),
     PutObjectCommand: class {},
     GetObjectCommand: class {},
     HeadObjectCommand: class {},
@@ -60,6 +67,24 @@ describe('FileService', () => {
     jest.clearAllMocks();
   });
 
+  describe('getContentFromUrl', () => {
+    test('should parse CSV content successfully', async () => {
+      expect.assertions(1);
+      const result = await fileService.getContentFromUrl(mockObjectUrl);
+      expect(result).toEqual(['value1', 'value2']);
+    });
+
+    test('should handle empty CSV content', async () => {
+      expect.assertions(1);
+      mockS3Send.mockResolvedValueOnce({
+        Body: Readable.from(['keyword,value\n']),
+      });
+
+      const result = await fileService.getContentFromUrl(mockObjectUrl);
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getPrivateReadUrl', () => {
     test('should safely get presigned url for private read', async () => {
       expect.assertions(1);
@@ -69,6 +94,17 @@ describe('FileService', () => {
           filePath: mockObjectUrl,
         }),
       ).resolves.toBe(mockObjectUrl);
+    });
+
+    test('should handle invalid URL format', async () => {
+      expect.assertions(1);
+      const invalidUrl = 'invalid-url';
+
+      await expect(
+        fileService.getPrivateReadUrl({
+          filePath: invalidUrl,
+        }),
+      ).rejects.toThrow();
     });
   });
 
@@ -81,15 +117,15 @@ describe('FileService', () => {
       ).resolves.toBe(mockObjectUrl);
     });
 
-    test('should safely get presigned url for private write with entityId', async () => {
-      expect.assertions(2);
+    test('should safely get presigned url with custom key', async () => {
+      expect.assertions(1);
+      const customKeyPayload = {
+        ...mockPreSignPayload,
+        customKey: 'custom/path/file.csv',
+      };
 
       await expect(
-        fileService.getPrivateWriteUrl(mockUserId, mockPreSignPayload),
-      ).resolves.toBe(mockObjectUrl);
-
-      await expect(
-        fileService.getPrivateWriteUrl(mockUserId, mockPreSignPayload),
+        fileService.getPrivateWriteUrl(mockUserId, customKeyPayload),
       ).resolves.toBe(mockObjectUrl);
     });
   });

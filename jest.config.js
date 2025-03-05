@@ -10,6 +10,9 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{service,handler,config,controller,subscriber}.{js,ts}',
     'src/common/**/*',
+    '!src/common/guards/**/*.{js,ts}',
+    '!src/common/interfaces/**/*.{js,ts}',
+    '!src/**/*.index.{js,ts}',
   ],
   preset: 'ts-jest',
   roots: ['<rootDir>'],

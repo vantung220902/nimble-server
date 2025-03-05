@@ -1,3 +1,4 @@
+import { waiter } from '@common/utils';
 import { AppConfig } from '@config';
 import { GoogleCrawlerOption } from '@modules/crawler/crawler.enum';
 import { CrawledGoogleResponse } from '@modules/crawler/interfaces';
@@ -33,23 +34,6 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  private async detectCaptcha(page: Page) {
-    const isCaptchaPresent = await page.evaluate(
-      () =>
-        document.querySelector('form[action*="captcha"]') !== null ||
-        document.querySelector('.g-recaptcha') !== null,
-    );
-    if (isCaptchaPresent) {
-      this.logger.warn('CAPTCHA detected!');
-
-      if (this.appConfig.isProduction) {
-        const { solutions, solved } = await page.solveRecaptchas();
-        this.logger.debug(`Solution ${JSON.stringify(solutions, null, 5)}`);
-        this.logger.debug(`Solved ${JSON.stringify(solved, null, 5)}`);
-      }
-    }
-  }
-
   public async crawlKeyword(keyword: string): Promise<CrawledGoogleResponse> {
     this.logger.log(`Searching for keyword: ${keyword.toString()}`);
 
@@ -68,11 +52,12 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
       await page.goto(
         `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent(keyword)}`,
         {
-          waitUntil: 'load',
+          waitUntil: 'networkidle0',
         },
       );
 
       await this.detectCaptcha(page);
+      await waiter(700);
 
       await page.waitForSelector(GoogleCrawlerOption.selector, {
         timeout: 50000,
@@ -121,14 +106,48 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async countAds(page: Page): Promise<number> {
-    return await page.$$eval(
-      GoogleCrawlerOption.primaryAdElement,
-      (ads) => ads.length,
-    );
+    return page.evaluate((selectors) => {
+      const uniqueAds = new Set();
+
+      selectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((ad) => {
+          const adElement =
+            ad.getAttribute('data-dtld') ||
+            ad.getAttribute('href') ||
+            ad.getAttribute('id') ||
+            ad.textContent?.trim();
+
+          if (adElement) {
+            uniqueAds.add(adElement);
+          }
+        });
+      });
+
+      return uniqueAds.size;
+    }, GoogleCrawlerOption.adSelectors);
   }
 
   private async countLinks(page: Page): Promise<number> {
     return await page.$$eval('a', (links) => links.length);
+  }
+
+  private async detectCaptcha(page: Page) {
+    const isCaptchaPresent = await page.evaluate(
+      () =>
+        document.querySelector('form[action*="captcha"]') !== null ||
+        document.querySelector('.g-recaptcha') !== null,
+    );
+    if (isCaptchaPresent) {
+      this.logger.warn('CAPTCHA detected!');
+
+      await waiter(5000);
+
+      if (this.appConfig.isProduction) {
+        const { solutions, solved } = await page.solveRecaptchas();
+        this.logger.debug(`Solution ${JSON.stringify(solutions, null, 5)}`);
+        this.logger.debug(`Solved ${JSON.stringify(solved, null, 5)}`);
+      }
+    }
   }
 
   private getRandomUserAgent(): string {

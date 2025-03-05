@@ -1,7 +1,7 @@
 import { AppConfig } from '@config';
 import { GoogleCrawlerOption } from '@modules/crawler/crawler.enum';
 import { CrawlerService } from '@modules/crawler/services';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Browser, Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
@@ -24,10 +24,13 @@ describe('CrawlerService', () => {
   let mockBrowser: Partial<Browser>;
   let mockPage: Partial<Page>;
   let mockConfig: { isProduction: boolean; reCaptchaApi: string };
+  let loggerSpy: jest.SpyInstance;
   let mockAppConfig: AppConfig;
 
   beforeEach(async () => {
     jest.clearAllMocks();
+
+    loggerSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
 
     mockConfig = {
       isProduction: false,
@@ -49,7 +52,6 @@ describe('CrawlerService', () => {
       waitForSelector: jest.fn(),
       content: jest.fn().mockResolvedValue('<html>Nimble</html>'),
       close: jest.fn().mockResolvedValue(undefined),
-      evaluate: jest.fn().mockResolvedValue(false),
       solveRecaptchas: jest.fn().mockResolvedValue({
         solutions: [],
         solved: true,
@@ -57,6 +59,9 @@ describe('CrawlerService', () => {
       $$eval: jest.fn().mockImplementation((selector) => {
         if (selector === GoogleCrawlerOption.linkTag)
           return Promise.resolve(10);
+        return Promise.resolve(5);
+      }),
+      evaluate: jest.fn().mockImplementation(() => {
         return Promise.resolve(5);
       }),
     };
@@ -82,6 +87,10 @@ describe('CrawlerService', () => {
     service = testModule.get<CrawlerService>(CrawlerService);
 
     await service.onModuleInit();
+  });
+
+  afterEach(() => {
+    loggerSpy.mockRestore();
   });
 
   describe('onModuleInit', () => {
@@ -120,6 +129,15 @@ describe('CrawlerService', () => {
   });
 
   describe('crawlKeyword', () => {
+    it('should log the search keyword', async () => {
+      const keyword = 'Nimble';
+      await service.crawlKeyword(keyword);
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        `Searching for keyword: ${keyword}`,
+      );
+    });
+
     it('should throw InternalServerErrorException if browser is not initialized', async () => {
       Object.defineProperty(service, 'browser', {
         value: undefined,
@@ -143,14 +161,14 @@ describe('CrawlerService', () => {
       );
       expect(mockPage.goto).toHaveBeenCalledWith(
         `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent('Nimble')}`,
-        { waitUntil: 'load' },
+        { waitUntil: 'networkidle0' },
       );
       expect(mockPage.waitForSelector).toHaveBeenCalledWith(
         GoogleCrawlerOption.selector,
         { timeout: 50000 },
       );
       expect(mockPage.content).toHaveBeenCalled();
-      expect(mockPage.$$eval).toHaveBeenCalledTimes(2);
+      expect(mockPage.$$eval).toHaveBeenCalledTimes(1);
       expect(mockPage.close).toHaveBeenCalled();
 
       expect(crawledContent).toEqual({
@@ -179,6 +197,21 @@ describe('CrawlerService', () => {
   });
 
   describe('detectCaptcha', () => {
+    let loggerWarnSpy: jest.SpyInstance;
+    let loggerDebugSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      loggerWarnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+      loggerDebugSpy = jest
+        .spyOn(Logger.prototype, 'debug')
+        .mockImplementation();
+    });
+
+    afterEach(() => {
+      loggerWarnSpy.mockRestore();
+      loggerDebugSpy.mockRestore();
+    });
+
     it('should handle captcha when detected in production', async () => {
       mockConfig.isProduction = true;
 
@@ -199,6 +232,30 @@ describe('CrawlerService', () => {
 
       expect(mockPage.evaluate).toHaveBeenCalled();
       expect(mockPage.solveRecaptchas).not.toHaveBeenCalled();
+    });
+
+    it('should log warning when captcha is detected', async () => {
+      mockPage.evaluate = jest.fn().mockResolvedValue(true);
+
+      await service['detectCaptcha'].call(service, mockPage);
+
+      expect(loggerWarnSpy).toHaveBeenCalledWith('CAPTCHA detected!');
+    });
+
+    it('should log solution details in production', async () => {
+      mockConfig.isProduction = true;
+      mockPage.evaluate = jest.fn().mockResolvedValue(true);
+      const mockSolution = { solutions: ['solution1'], solved: true };
+      mockPage.solveRecaptchas = jest.fn().mockResolvedValue(mockSolution);
+
+      await service['detectCaptcha'].call(service, mockPage);
+
+      expect(loggerDebugSpy).toHaveBeenCalledWith(
+        `Solution ${JSON.stringify(mockSolution.solutions, null, 5)}`,
+      );
+      expect(loggerDebugSpy).toHaveBeenCalledWith(
+        `Solved ${JSON.stringify(mockSolution.solved, null, 5)}`,
+      );
     });
   });
 

@@ -7,7 +7,6 @@ export const loggerSchema = {
   LOG_LEVEL: Joi.string()
     .valid('trace', 'debug', 'info', 'warn', 'error')
     .default('info'),
-  // e.g. GET::/health,POST::/network
   LOG_EXCLUDE: Joi.string().optional(),
 };
 
