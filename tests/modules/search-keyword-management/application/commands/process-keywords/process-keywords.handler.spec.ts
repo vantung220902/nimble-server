@@ -53,10 +53,12 @@ describe('ProcessKeywordsHandler', () => {
       },
       userKeywordUpload: {
         create: jest.fn(),
+        upsert: jest.fn(),
         createMany: jest.fn(),
       },
       fileKeywordsUpload: {
         update: jest.fn(),
+        upsert: jest.fn(),
       },
     } as any as jest.MockedObject<PrismaService>;
 
@@ -123,6 +125,9 @@ describe('ProcessKeywordsHandler', () => {
       (prismaService.keyword.upsert as jest.Mock).mockResolvedValue({
         id: mockKeywordId,
       });
+      (prismaService.userKeywordUpload.upsert as jest.Mock).mockResolvedValue(
+        {},
+      );
 
       const processKeywordsResponse = await handler.execute(mockCommand);
 
@@ -131,7 +136,7 @@ describe('ProcessKeywordsHandler', () => {
         ProcessingStatus.COMPLETED,
       );
       expect(prismaService.keyword.upsert).toHaveBeenCalled();
-      expect(prismaService.userKeywordUpload.create).toHaveBeenCalled();
+      expect(prismaService.userKeywordUpload.upsert).toHaveBeenCalled();
       expect(redisService.publish).toHaveBeenCalled();
     });
 
