@@ -36,7 +36,7 @@ export class GetKeywordsHandler extends QueryHandlerBase<
 
   private async getKeywords({
     reqUser,
-    query: { take, skip, fileUploadId, search, isGlobalSearch },
+    query: { take, skip, fileUploadId, search },
   }: GetKeywordsQuery) {
     const andWhereConditions: Prisma.Enumerable<Prisma.KeywordWhereInput> = [
       {
@@ -61,20 +61,7 @@ export class GetKeywordsHandler extends QueryHandlerBase<
     }
 
     if (search) {
-      const orWhereConditions: Prisma.Enumerable<Prisma.KeywordWhereInput> = [
-        { content: filterOperationByMode(search) },
-      ];
-      if (isGlobalSearch) {
-        orWhereConditions.push({
-          crawledContent: {
-            content: filterOperationByMode(search),
-          },
-        });
-      }
-
-      andWhereConditions.push({
-        OR: orWhereConditions,
-      });
+      andWhereConditions.push({ content: filterOperationByMode(search) });
     }
 
     const [foundKeywords, totalKeywords] = await Promise.all([
@@ -87,15 +74,12 @@ export class GetKeywordsHandler extends QueryHandlerBase<
           resolvedAt: true,
           createdAt: true,
           content: true,
-          crawledContent: isGlobalSearch
-            ? {
-                select: {
-                  totalGoogleAds: true,
-                  totalLinks: true,
-                  content: true,
-                },
-              }
-            : false,
+          crawledContent: {
+            select: {
+              totalGoogleAds: true,
+              totalLinks: true,
+            },
+          },
           fileUploads: {
             where: {
               fileUpload: {

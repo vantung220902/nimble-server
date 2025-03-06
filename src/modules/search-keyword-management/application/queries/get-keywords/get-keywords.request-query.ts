@@ -1,14 +1,6 @@
-import { ToBoolean } from '@common/decorators';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Min,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class GetKeywordsRequestQuery {
   @ApiPropertyOptional({
@@ -27,15 +19,6 @@ export class GetKeywordsRequestQuery {
   @IsString()
   @Type(() => String)
   search?: string;
-
-  @ApiPropertyOptional({
-    description: 'Search',
-    example: 'Nimble',
-  })
-  @IsOptional()
-  @ToBoolean()
-  @IsBoolean()
-  isGlobalSearch?: boolean = false;
 
   @ApiPropertyOptional({
     description: 'Number of records to skip and then return the remainder',

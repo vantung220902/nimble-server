@@ -109,7 +109,7 @@ describe('GetKeywordsHandler', () => {
               },
             },
             {
-              OR: [{ content: expect.any(Object) }],
+              content: expect.any(Object),
             },
           ],
         },
@@ -118,7 +118,12 @@ describe('GetKeywordsHandler', () => {
           resolvedAt: true,
           createdAt: true,
           content: true,
-          crawledContent: false,
+          crawledContent: {
+            select: {
+              totalGoogleAds: true,
+              totalLinks: true,
+            },
+          },
           fileUploads: {
             where: {
               fileUpload: {
