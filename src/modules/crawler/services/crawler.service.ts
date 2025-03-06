@@ -31,7 +31,7 @@ export class CrawlerService {
 
       const isCaptchaDetected = await this.captchaDetectionService.detect(page);
       if (isCaptchaDetected && this.appConfig.isProduction) {
-        await this.captchaDetectionService.detect(page);
+        await this.captchaDetectionService.resolve(page);
       }
 
       await waiter(2000);
