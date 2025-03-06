@@ -9,13 +9,7 @@ export const GoogleCrawlerOption = {
   cookieButtonElement: 'button[id="L2AGLb"]',
   searchInputElement: 'textarea[name="q"]',
   selector: '#search',
-  adSelectors: [
-    'div[id*="tads"]',
-    'a.plantl.pla-unit-title-link',
-    'div.mnr-c.pla-unit',
-    'div[class*="sponsored"]',
-    'div[data-dtld]',
-  ],
+  adSelectors: ['div.mnr-c.pla-unit', 'div.twpSFc.mnr-c'],
   linkTag: 'a',
   viewPort: {
     width: 1200,

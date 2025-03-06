@@ -3,69 +3,52 @@ import { AppConfig } from '@config';
 import { GoogleCrawlerOption } from '@modules/crawler/crawler.enum';
 import { CrawledGoogleResponse } from '@modules/crawler/interfaces';
 import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
-import { Browser, Page } from 'puppeteer';
-import puppeteer from 'puppeteer-extra';
-import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+  CaptchaDetectionService,
+  ContentParserService,
+  PageManagementService,
+} from '@modules/crawler/services';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class CrawlerService implements OnModuleInit, OnModuleDestroy {
+export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
 
-  private browser: Browser;
-
-  constructor(private readonly appConfig: AppConfig) {
-    puppeteer.use(StealthPlugin());
-
-    puppeteer.use(
-      RecaptchaPlugin({
-        provider: {
-          id: '2captcha',
-          token: this.appConfig.reCaptchaApi,
-        },
-        visualFeedback: true,
-      }),
-    );
-  }
+  constructor(
+    private readonly pageManagementService: PageManagementService,
+    private readonly captchaDetectionService: CaptchaDetectionService,
+    private readonly contentParserService: ContentParserService,
+    private readonly appConfig: AppConfig,
+  ) {}
 
   public async crawlKeyword(keyword: string): Promise<CrawledGoogleResponse> {
     this.logger.log(`Searching for keyword: ${keyword.toString()}`);
 
-    if (!this.browser) {
-      throw new InternalServerErrorException('Somethings wrong!');
-    }
-
-    const page = await this.browser.newPage();
+    const page = await this.pageManagementService.launchNewPage();
     try {
-      await page.setUserAgent(this.getRandomUserAgent());
+      const searchLink = `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent(keyword)}`;
+      await this.pageManagementService.configPage(page);
+      await this.pageManagementService.navigateToLink(searchLink, page);
 
-      await page.setViewport(GoogleCrawlerOption.viewPort);
+      const isCaptchaDetected = await this.captchaDetectionService.detect(page);
+      if (isCaptchaDetected && this.appConfig.isProduction) {
+        await this.captchaDetectionService.detect(page);
+      }
 
-      await page.setCookie(...GoogleCrawlerOption.cookies);
+      await waiter(2000);
 
-      await page.goto(
-        `${GoogleCrawlerOption.link}/search?q=${encodeURIComponent(keyword)}`,
-        {
-          waitUntil: 'networkidle0',
-        },
+      await this.pageManagementService.waitForSelector(
+        GoogleCrawlerOption.selector,
+        page,
       );
 
-      await this.detectCaptcha(page);
-      await waiter(700);
+      const content = await this.pageManagementService.getPageContent(page);
 
-      await page.waitForSelector(GoogleCrawlerOption.selector, {
-        timeout: 50000,
-      });
-
-      const content = await page.content();
-      const totalAds = await this.countAds(page);
-      const totalLinks = await this.countLinks(page);
+      const documentElement =
+        this.contentParserService.getDocumentContent(content);
+      const totalAds =
+        this.contentParserService.countAdsFromDocument(documentElement);
+      const totalLinks =
+        this.contentParserService.countLinksFromDocument(documentElement);
 
       const crawledResponse = {
         totalAds,
@@ -74,85 +57,16 @@ export class CrawlerService implements OnModuleInit, OnModuleDestroy {
         keyword,
       };
 
-      await page.close();
+      await this.pageManagementService.closePage(page);
 
       return crawledResponse;
     } catch (error) {
       console.log('Error', error);
-      await page.close();
+
+      console.log(
+        `CrawlerService crawlKeyword error: ${JSON.stringify(error, null, 5)}`,
+      );
+      await this.pageManagementService.closePage(page);
     }
-  }
-
-  public async onModuleDestroy() {
-    if (this.browser) {
-      await this.browser.close();
-    }
-  }
-
-  public async onModuleInit() {
-    this.browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-infobars',
-        '--window-position=0,0',
-        '--ignore-certificate-errors',
-        '--ignore-certificate-errors-spki-list',
-        '--disable-blink-features=AutomationControlled',
-      ],
-      ignoreHTTPSErrors: true,
-    });
-  }
-
-  private async countAds(page: Page): Promise<number> {
-    return page.evaluate((selectors) => {
-      const uniqueAds = new Set();
-
-      selectors.forEach((selector) => {
-        document.querySelectorAll(selector).forEach((ad) => {
-          const adElement =
-            ad.getAttribute('data-dtld') ||
-            ad.getAttribute('href') ||
-            ad.getAttribute('id') ||
-            ad.textContent?.trim();
-
-          if (adElement) {
-            uniqueAds.add(adElement);
-          }
-        });
-      });
-
-      return uniqueAds.size;
-    }, GoogleCrawlerOption.adSelectors);
-  }
-
-  private async countLinks(page: Page): Promise<number> {
-    return await page.$$eval('a', (links) => links.length);
-  }
-
-  private async detectCaptcha(page: Page) {
-    const isCaptchaPresent = await page.evaluate(
-      () =>
-        document.querySelector('form[action*="captcha"]') !== null ||
-        document.querySelector('.g-recaptcha') !== null,
-    );
-    if (isCaptchaPresent) {
-      this.logger.warn('CAPTCHA detected!');
-
-      await waiter(5000);
-
-      if (this.appConfig.isProduction) {
-        const { solutions, solved } = await page.solveRecaptchas();
-        this.logger.debug(`Solution ${JSON.stringify(solutions, null, 5)}`);
-        this.logger.debug(`Solved ${JSON.stringify(solved, null, 5)}`);
-      }
-    }
-  }
-
-  private getRandomUserAgent(): string {
-    return GoogleCrawlerOption.userAgents[
-      Math.floor(Math.random() * GoogleCrawlerOption.userAgents.length)
-    ];
   }
 }
