@@ -12,6 +12,7 @@ export function loggerRequestMiddleware(
   const authorization = req.headers['authorization'];
 
   if (authorization) {
+    // add custom headers to increase traceability of the requests auto logs
     const data = decodeJwt(authorization);
     req.headers['x-request-sub'] = data.sub;
     req.headers['x-request-user-id'] = data.sub;
