@@ -35,63 +35,63 @@
       "secrets": [
       {
           "name": "NODE_ENV",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/NODE_ENV"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/NODE_ENV"
       },
       {
           "name": "APP_NAME",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/APP_NAME"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/APP_NAME"
       },
       {
           "name": "AWS_S3_STORAGE_BUCKET",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/AWS_S3_STORAGE_BUCKET"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/AWS_S3_STORAGE_BUCKET"
       },
       {
           "name": "API_URL",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/API_URL"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/API_URL"
       },
       {
           "name": "STAGE",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/STAGE"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/STAGE"
       },
       {
           "name": "APP_PORT",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/API_PORT"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/API_PORT"
       },
       {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/DATABASE_URL"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/DATABASE_URL"
       },
       {
           "name": "API_KEY",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/API_KEY"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/API_KEY"
       },
       {
           "name": "REDIS_HOST",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/REDIS_HOST"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/REDIS_HOST"
       },
       {
           "name": "REDIS_PORT",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/REDIS_PORT"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/REDIS_PORT"
       },
       {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/JWT_SECRET"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/JWT_SECRET"
       },
       {
           "name": "JWT_EXPIRES_IN",
-          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/JWT_EXPIRES_IN"
+          "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/JWT_EXPIRES_IN"
       },
       {
         "name": "EMAIL_FORM",
-        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/EMAIL_FORM"
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/EMAIL_FORM"
       },
       {
         "name": "SENDGRID_API_KEY",
-        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/SENDGRID_API_KEY"
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/SENDGRID_API_KEY"
       },
       {
         "name": "RE_CAPTCHA_API",
-        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble-api-svc/$STAGE/RE_CAPTCHA_API"
+        "valueFrom": "arn:aws:ssm:us-west-2:$AWS_ACCOUNT_ID:parameter/nimble/$STAGE/RE_CAPTCHA_API"
       }
       ]
     }
