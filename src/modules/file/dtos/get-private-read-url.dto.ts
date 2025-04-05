@@ -5,7 +5,7 @@ export class GetPrivateReadUrlDto {
   @ApiProperty({
     description: 'Path of file',
     example:
-      'https://bucket-storage.s3.us-west-2.amazonaws.com/keywords/keywords.csv',
+      'https://bucket-storage.s3.us-east-1.amazonaws.com/keywords/keywords.csv',
   })
   @IsUrl()
   filePath: string;
