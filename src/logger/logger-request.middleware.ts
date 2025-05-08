@@ -1,4 +1,4 @@
-import { NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 const decodeJwt = (token: string) => {
   return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
@@ -13,10 +13,14 @@ export function loggerRequestMiddleware(
 
   if (authorization) {
     // add custom headers to increase traceability of the requests auto logs
-    const data = decodeJwt(authorization);
-    req.headers['x-request-sub'] = data.sub;
-    req.headers['x-request-user-id'] = data.sub;
-    req.headers['x-request-username'] = data.email;
+    try {
+      const data = decodeJwt(authorization);
+      req.headers['x-request-sub'] = data.sub;
+      req.headers['x-request-user-id'] = data.sub;
+      req.headers['x-request-username'] = data.email;
+    } catch (error) {
+      throw error;
+    }
   }
 
   next();

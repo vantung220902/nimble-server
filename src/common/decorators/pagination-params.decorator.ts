@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { PaginationRequest } from '../interfaces/pagination-request';
+import { PaginationRequest } from '../interfaces/pagination-request.interface';
 
 export interface DefaultPagination {
   defaultSkip?: number;
@@ -23,9 +23,13 @@ export const PaginationParams = createParamDecorator(
 
     const { defaultSkip, defaultTake, maxAllowedSize } = data;
 
-    take = take && take > 0 ? +take : defaultTake;
+    take = take && +take > 0 ? +take : defaultTake;
+    console.log('take ne', take);
+
     take = +take < +maxAllowedSize ? take : maxAllowedSize;
-    skip = skip && skip > 0 ? +skip : defaultSkip;
+    skip = skip && +skip > 0 ? +skip : defaultSkip;
+
+    console.log('take ne', take, defaultTake, maxAllowedSize);
 
     return Object.assign(data, {
       skip,

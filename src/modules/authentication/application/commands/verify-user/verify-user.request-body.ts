@@ -26,10 +26,10 @@ export class VerifyUserRequestBody {
     description: 'Verification code',
     example: '123456',
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Code must be a string' })
+  @IsNotEmpty({ message: 'Code is required' })
   @Length(VERIFICATION_CODE_LENGTH, VERIFICATION_CODE_LENGTH, {
-    message: 'Verification code must be 6-digit ',
+    message: 'Verification code must be 6-digit',
   })
   code: string;
 }

@@ -1,7 +1,7 @@
 export const AuthenticationValidationConstraint = {
   EMAIL_MAX_LENGTH: 320,
   PASSWORD_MAX_LENGTH: 100,
-  PASSWORD_MIM_LENGTH: 10,
+  PASSWORD_MIM_LENGTH: 8,
 };
 export const EXPIRATION_REFRESH_TOKEN_IN = '3d';
 export const EXPIRATION_REFRESH_TOKEN_SECONDS = 60 * 60 * 24 * 3 * 1000;

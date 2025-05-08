@@ -1,13 +1,13 @@
+import { getTokenFromHeader } from '@common/utils';
 import { AppConfig } from '@config';
 import { PrismaService } from '@database';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { Cache } from 'cache-manager';
 import { Request } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Cache } from 'cache-manager';
-import { getTokenFromHeader } from '@common/utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

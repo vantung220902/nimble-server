@@ -1,5 +1,5 @@
 import { PaginatedApiResponseDto } from '../dtos/paginated-response.dto';
-import { PaginationRequest } from '../interfaces/pagination-request';
+import { PaginationRequest } from '../interfaces/pagination-request.interface';
 
 export class Pagination {
   static of<T>(

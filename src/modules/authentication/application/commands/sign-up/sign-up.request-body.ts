@@ -52,9 +52,11 @@ export class SignUpRequestBody {
     description: 'Confirm password',
     example: 'password',
   })
-  @IsNotEmpty()
-  @IsString()
-  @MatchWith('password', { message: 'Confirm does not match with password' })
+  @IsNotEmpty({ message: 'Confirm password is required' })
+  @IsString({ message: 'Confirm password must be a string' })
+  @MatchWith('password', {
+    message: 'Confirm password does not match with password',
+  })
   confirmPassword: string;
 
   @ApiProperty({
@@ -62,9 +64,11 @@ export class SignUpRequestBody {
     maxLength: 100,
     example: 'Tung',
   })
-  @IsNotEmpty()
-  @MaxLength(100)
-  @IsString()
+  @IsNotEmpty({ message: 'First name is required' })
+  @MaxLength(100, {
+    message: 'First name must not exceed 100 characters',
+  })
+  @IsString({ message: 'First name must be a string' })
   firstName: string;
 
   @ApiProperty({
@@ -72,8 +76,10 @@ export class SignUpRequestBody {
     maxLength: 100,
     example: 'Nguyen',
   })
-  @IsNotEmpty()
-  @MaxLength(100)
-  @IsString()
+  @IsNotEmpty({ message: 'Last name is required' })
+  @MaxLength(100, {
+    message: 'Last name must not exceed 100 characters',
+  })
+  @IsString({ message: 'Last name must be a string' })
   lastName: string;
 }

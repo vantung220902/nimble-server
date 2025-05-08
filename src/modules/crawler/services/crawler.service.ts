@@ -50,16 +50,14 @@ export class CrawlerService {
       const totalLinks =
         this.contentParserService.countLinksFromDocument(documentElement);
 
-      const crawledResponse = {
+      await this.pageManagementService.closePage(page);
+
+      return {
         totalAds,
         totalLinks,
         content,
         keyword,
       };
-
-      await this.pageManagementService.closePage(page);
-
-      return crawledResponse;
     } catch (error) {
       console.log('Error', error);
 

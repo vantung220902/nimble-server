@@ -8,11 +8,9 @@ module.exports = {
     },
   },
   collectCoverageFrom: [
-    'src/**/*.{service,handler,config,controller,subscriber}.{js,ts}',
-    'src/common/**/*',
-    '!src/common/guards/**/*.{js,ts}',
-    '!src/common/interfaces/**/*.{js,ts}',
-    '!src/**/*.index.{js,ts}',
+    'src/**/*.{js,ts}',
+    '!src/**/**/{index,*.enum}.{js,ts}',
+    '!src/generated/**/*',
   ],
   preset: 'ts-jest',
   roots: ['<rootDir>'],
@@ -62,5 +60,7 @@ module.exports = {
     '^@logger': '<rootDir>/src/logger',
     '^@health/(.*)$': '<rootDir>/src/health/$1',
     '^@health': '<rootDir>/src/health',
+    '^@swagger/(.*)$': '<rootDir>/src/swagger/$1',
+    '^@swagger': '<rootDir>/src/swagger',
   },
 };

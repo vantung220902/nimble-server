@@ -71,7 +71,7 @@ export class AuthenticationCommandEndpoint extends CommandEndpoint {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Post('sign-out')
-  public logout(@Request() request): Promise<void> {
+  public signOut(@Request() request): Promise<void> {
     const accessToken = getTokenFromHeader(request.headers);
 
     return this.commandBus.execute<SignOutCommand, void>(

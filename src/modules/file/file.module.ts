@@ -1,3 +1,4 @@
+import { AppConfig } from '@config';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
@@ -13,7 +14,7 @@ const Services = [...Object.values(services)];
 @Module({
   imports: [CqrsModule],
   controllers: [...endpoints],
-  providers: [...Services, ...handlers],
+  providers: [...Services, ...handlers, AppConfig],
   exports: [...Services],
 })
 export class FileModule {}

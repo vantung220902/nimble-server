@@ -1,2 +1,2 @@
-export * from './pagination-request';
+export * from './pagination-request.interface';
 export * from './payload.interface';

@@ -1,4 +1,4 @@
-const toError = (candidate: unknown): Error => {
+export const toError = (candidate: unknown): Error => {
   try {
     return new Error(JSON.stringify(candidate));
   } catch {
@@ -11,8 +11,9 @@ const toError = (candidate: unknown): Error => {
 export const getStack = (err: Error) =>
   err && err.stack ? err.stack.split('\n').map((s) => s.trim()) : [];
 
-export const isError = (maybeError: any): maybeError is Error =>
-  maybeError && instanceOfError(maybeError);
+export const isError = (maybeError: any): maybeError is Error => {
+  return maybeError && instanceOfError(maybeError);
+};
 
 export const instanceOfError = (maybeError: unknown): boolean =>
   maybeError instanceof Error;

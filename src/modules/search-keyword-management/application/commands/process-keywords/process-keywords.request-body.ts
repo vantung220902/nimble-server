@@ -6,22 +6,22 @@ export class ProcessKeywordsRequestBody {
     description: 'Keywords',
     example: ['Nimble', 'Fullstack', 'NodeJS', 'Book', 'Desk'],
   })
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsString({ each: true })
+  @IsArray({ message: 'Keywords must be array' })
+  @ArrayNotEmpty({ message: 'Keywords are required' })
+  @IsString({ each: true, message: 'Keyword must be a string' })
   keywords: string[];
 
   @ApiProperty({
     description: 'File keywords upload id',
     example: 'b0f61762-8688-4477-b304-4c38eba78639',
   })
-  @IsUUID()
+  @IsUUID(undefined, { message: 'FleUploadId must be a UUID' })
   fileUploadId: string;
 
   @ApiProperty({
     description: 'Connection id',
     example: 'b0f61762-8688-4477-b304-4c38eba78639',
   })
-  @IsUUID()
+  @IsUUID(undefined, { message: 'ConnectionId must be a UUID' })
   connectionId: string;
 }

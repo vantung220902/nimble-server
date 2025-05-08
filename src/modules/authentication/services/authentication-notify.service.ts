@@ -20,7 +20,6 @@ export class AuthenticationNotifyService {
     const verificationCacheKey = this.authService.getVerificationCacheKey(
       user.email,
     );
-
     const verificationLink = this.authService.generateVerificationLink(
       user.email,
       verificationCode,
