@@ -12,8 +12,8 @@
     "api-svc"
   ],
   "scripts": {
-    "db": "aws ssm start-session --target i-0b105d5b406554cf0 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"rds-nimble-development-db.co12tbwlfraj.us-east-1.rds.amazonaws.com\",portNumber=\"5432\",localPortNumber=\"5438\" --profile nimble",
-    "redis": "aws ssm start-session --target i-0b105d5b406554cf0 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"redis-replica-nimble-development.vaebta.ng.0001.use1.cache.amazonaws.com\",portNumber=\"6379\",localPortNumber=\"6378\" --profile nimble",
+    "db": "aws ssm start-session --target i-0e26c8e8666a95230 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"rds-nimble-development-db.cebiqkausn1s.us-east-1.rds.amazonaws.com\",portNumber=\"5432\",localPortNumber=\"5438\" --profile nimble",
+    "redis": "aws ssm start-session --target i-0e26c8e8666a95230 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=\"redis-replica-nimble-development.vaebta.ng.0001.use1.cache.amazonaws.com\",portNumber=\"6379\",localPortNumber=\"6378\" --profile nimble",
     "prebuild": "rimraf dist",
     "build": "nest build -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",

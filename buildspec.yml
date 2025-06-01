@@ -16,6 +16,7 @@ env:
     SUBNET_ISOLATION_AZ_A: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_A
     SUBNET_ISOLATION_AZ_B: $AWS_SECRET_ARN:SUBNET_ISOLATION_AZ_B
     SECURITY_GROUP_ISOLATION_ID: $AWS_SECRET_ARN:SECURITY_GROUP_ISOLATION_ID
+    S3_ARTIFACT_ECS: $AWS_SECRET_ARN:S3_ARTIFACT_ECS
   variables:
     PUPPETEER_SKIP_DOWNLOAD: "true"
 
@@ -50,7 +51,9 @@ phases:
       - yarn prisma:deploy
 
       - printf '{"ImageURI":"%s"}' ${AWS_ECR_REPOSITORY_URL}:${COMMIT_ID} > imageDetail.json
+      - zip appspec.zip appspec.yml taskdef.json imageDetail.json
       - ls -la
+      - aws s3 cp appspec.zip s3://${S3_FINANCIAL_SERVICE_ARTIFACT_ECS}
 
   post_build:
     commands:

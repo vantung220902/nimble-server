@@ -1,0 +1,150 @@
+name: Deploy
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+  push:
+    branches:
+      - develop
+
+env:
+  NODE_VERSION: "20"
+  PUPPETEER_SKIP_DOWNLOAD: "true"
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_ECR_IMAGE_TAG: ${{ vars.AWS_ECR_IMAGE_TAG }}
+  AWS_ECR_REPOSITORY_URL: ${{ vars.AWS_ECR_REPOSITORY_URL }}
+  TASK_EXECUTION_ROLE: ${{ vars.TASK_EXECUTION_ROLE }}
+  TASK_ROLE: ${{ vars.TASK_ROLE }}
+  APP_PORT: ${{ vars.APP_PORT }}
+  API_PORT: ${{ vars.API_PORT }}
+  JUMP_BOX_INSTANCE_ID: ${{ vars.JUMP_BOX_INSTANCE_ID }}
+  DB_HOST: ${{ vars.DB_HOST }}
+  DB_PORT: ${{ vars.DB_PORT }}
+  SSH_PORT: ${{ vars.SSH_PORT }}
+  DB_NAME: ${{ vars.DB_NAME }}
+  SUBNET_ISOLATION_AZ_A: ${{ vars.SUBNET_ISOLATION_AZ_A }}
+  SUBNET_ISOLATION_AZ_B: ${{ vars.SUBNET_ISOLATION_AZ_B }}
+  SECURITY_GROUP_ISOLATION_ID: ${{ vars.SECURITY_GROUP_ISOLATION_ID }}
+  S3_ARTIFACT_ECS: ${{ vars.S3_ARTIFACT_ECS }}
+  JWT_SECRET: ${{ vars.JWT_SECRET }}
+  JWT_EXPIRES_IN: ${{ vars.JWT_EXPIRES_IN }}
+  NODE_ENV: ${{ vars.NODE_ENV }}
+  LOG_LEVEL: "debug"
+  STAGE: ${{ vars.STAGE }}
+
+jobs:
+  build-and-deploy:
+    name: Deploy to ecs
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    environment: Nimble
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Generate environment files from templates
+        run: |
+          envsubst < appspec_template.yml > appspec.yml
+          envsubst < taskdef_template.json > taskdef.json
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          NODE_ENV=${{ env.NODE_ENV }}
+          AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID }}
+          AWS_REGION=${{ env.AWS_REGION }}
+          AWS_ECR_IMAGE_TAG=${{ env.AWS_ECR_IMAGE_TAG }}
+          AWS_ECR_REPOSITORY_URL=${{ env.AWS_ECR_REPOSITORY_URL }}
+          TASK_EXECUTION_ROLE=${{ env.TASK_EXECUTION_ROLE }}
+          TASK_ROLE=${{ env.TASK_ROLE }}
+          APP_PORT=${{ env.APP_PORT }}
+          API_PORT=${{ env.API_PORT }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          SHADOW_DATABASE_URL=${{ secrets.SHADOW_DATABASE_URL }}
+          SUBNET_ISOLATION_AZ_A=${{ env.SUBNET_ISOLATION_AZ_A }}
+          SUBNET_ISOLATION_AZ_B=${{ env.SUBNET_ISOLATION_AZ_B }}
+          SECURITY_GROUP_ISOLATION_ID=${{ env.SECURITY_GROUP_ISOLATION_ID }}
+          S3_ARTIFACT_ECS=${{ env.S3_ARTIFACT_ECS }}
+          PUPPETEER_SKIP_DOWNLOAD=${{ env.PUPPETEER_SKIP_DOWNLOAD }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          JWT_EXPIRES_IN: ${{ env.JWT_EXPIRES_IN }}
+          STAGE: ${{ env.STAGE }}
+          EOF
+
+      - name: Run security audit
+        run: yarn dlx audit-ci -l
+
+      - name: Generate Prisma client
+        run: yarn prisma:g
+
+      - name: Run tests
+        run: yarn test:ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        run: |
+          docker system prune -af
+          docker build --pull --build-arg NODE_ENV=${{ env.NODE_ENV }} -t app .
+
+          COMMIT_ID=$(echo ${{ github.sha }} | cut -b -8)
+          docker tag app:latest ${{ env.AWS_ECR_REPOSITORY_URL }}:${{ env.AWS_ECR_IMAGE_TAG }}
+
+          docker push ${{ env.AWS_ECR_REPOSITORY_URL }}:${{ env.AWS_ECR_IMAGE_TAG }}
+
+          echo "COMMIT_ID=${COMMIT_ID}" >> $GITHUB_ENV
+
+      - name: Run database migration
+        run: |
+          # Install AWS Session Manager plugin
+          curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+          sudo dpkg -i session-manager-plugin.deb
+
+          aws ssm start-session --target ${{ env.JUMP_BOX_INSTANCE_ID }} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host="${{ env.DB_HOST }}",portNumber="${{ env.DB_PORT }}",localPortNumber="${{ env.SSH_PORT }}" & (sleep 10; DATABASE_URL="postgres://${{ secrets.DB_USERNAME }}:${{ secrets.DB_PASSWORD }}@localhost:${{ env.SSH_PORT }}/${{ env.DB_NAME }}?schema=public" yarn prisma:deploy)
+        env:
+          JUMP_BOX_INSTANCE_ID: ${{ vars.JUMP_BOX_INSTANCE_ID }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_PORT: ${{ vars.DB_PORT }}
+          SSH_PORT: ${{ vars.SSH_PORT }}
+          DB_NAME: ${{ vars.DB_NAME }}
+
+      - name: Create deployment artifacts
+        run: |
+          printf '{"ImageURI":"%s"}' ${{ env.AWS_ECR_REPOSITORY_URL }}:${{ env.AWS_ECR_IMAGE_TAG }} > imageDetail.json
+          zip appspec.zip appspec.yml taskdef.json imageDetail.json
+
+          ls -la
+
+      - name: Upload artifacts to S3
+        run: |
+          aws s3 cp appspec.zip s3://${{ env.S3_ARTIFACT_ECS }}
+
+      - name: Display build status
+        run: |
+          echo "Build completed successfully: ${{ job.status }}"

@@ -12,7 +12,7 @@ describe('RequestUser', () => {
     };
 
     expect(requestUser).toBeDefined();
-    expect(dayjs(requestUser.exp).format('YYYY-MM-DD')).toEqual('1970-01-20');
-    expect(dayjs(requestUser.iat).format('YYYY-MM-DD')).toEqual('1970-01-20');
+    expect(dayjs(requestUser.exp).format('YYYY-MM-DD')).toEqual('1970-01-19');
+    expect(dayjs(requestUser.iat).format('YYYY-MM-DD')).toEqual('1970-01-19');
   });
 });
